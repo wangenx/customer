@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="29px" height="27px" viewBox="0 0 29 27" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 59.1 (86144) - https://sketch.com -->
+    <title>编组</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <filter x="-0.8%" y="-25.0%" width="101.7%" height="150.0%" filterUnits="objectBoundingBox" id="filter-1">
+            <feOffset dx="0" dy="2" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="2" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.0686188811 0" type="matrix" in="shadowBlurOuter1" result="shadowMatrixOuter1"></feColorMatrix>
+            <feMerge>
+                <feMergeNode in="shadowMatrixOuter1"></feMergeNode>
+                <feMergeNode in="SourceGraphic"></feMergeNode>
+            </feMerge>
+        </filter>
+    </defs>
+    <g id="pc版本" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="销售管理" transform="translate(-56.000000, -13.000000)" fill-rule="nonzero">
+            <g id="top" filter="url(#filter-1)">
+                <g id="编组" transform="translate(60.000000, 15.000000)">
+                    <path d="M10.0332617,18.8763737 L0.444089784,13.2709298 C0.168648975,13.1071985 0,12.81154 0,12.492396 C0,12.173252 0.168648975,11.8775934 0.444089784,11.7138621 L10.0332617,6.12398894 C10.3187247,5.95867035 10.6714905,5.95867035 10.9569534,6.12398894 L20.5559102,11.7041304 C20.831351,11.8678617 21,12.1635203 21,12.4826643 C21,12.8018083 20.831351,13.0974669 20.5559102,13.2611982 L10.9667383,18.866642 C10.6812069,19.0408942 10.322403,19.0446348 10.0332617,18.8763737 L10.0332617,18.8763737 Z" id="路径" fill="#00D0FF" opacity="0.8"></path>
+                    <path d="M0.452017731,7.26824174 C0.172111164,7.1057492 0,6.80757066 0,6.48513167 C0,6.16269268 0.172111164,5.86451414 0.452017731,5.7020216 L10.0336297,0.123943096 C10.3188676,-0.0413143655 10.6713553,-0.0413143655 10.9565931,0.123943096 L20.5479823,5.7020216 C20.8278888,5.86451414 21,6.16269268 21,6.48513167 C21,6.80757066 20.8278888,7.1057492 20.5479823,7.26824174 L10.9663703,12.8716132 C10.6792575,13.0427956 10.3207425,13.0427956 10.0336297,12.8716132 L0.452017731,7.26824174 Z" id="路径" fill="#3393FF" opacity="0.7"></path>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

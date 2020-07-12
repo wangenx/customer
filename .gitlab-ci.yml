@@ -1,0 +1,43 @@
+before_script:
+
+stages:
+  - build
+  - release
+  - cleanup
+
+npm_build:
+  stage: build
+  script:
+    - npm install
+    - npm run build
+  artifacts:
+    paths:
+      - dist
+    expire_in: 5 mins
+  cache:
+    paths:
+      - node_modules
+  only:
+    - master
+  tags:
+    - huawei_cloud
+
+deploy_with_anisble:
+  stage: release
+  script:
+    - ansible-playbook /gitlab-runner-project/juhe-gitlab-runner-common-deploy.yaml --extra-vars "host=gateway user=root project_group=${CI_PROJECT_NAMESPACE} project_name=${CI_PROJECT_NAME} commit_id=${CI_COMMIT_SHORT_SHA} project_dir=${CI_PROJECT_DIR}"
+    - echo "Deploy to staging server"
+  only:
+    - master
+  tags:
+    - huawei_cloud
+
+cleanup_dist_file:
+  stage: cleanup
+  script:
+    - rm -rf dist
+  when: always
+  only:
+    - master
+  tags:
+    - huawei_cloud

@@ -1,0 +1,61 @@
+@charset "utf-8";
+body,ul,ol,dl,dd,h1,h2,h3,h4,h5,h6,figure,form,fieldset,legend,input,textarea,button,p,blockquote,th,td,pre,xmp{margin:0;padding:0}
+address,cite,dfn,em,i,optgroup,var{font-style:normal}
+table{border-collapse:collapse;border-spacing:0;text-align:left}
+caption,th{text-align:inherit}
+ul,ol,menu{list-style:none}
+fieldset,img{border:0}
+img,object,input,textarea,button,select{vertical-align:middle}
+article,aside,footer,header,section,nav,figure,figcaption,hgroup,details,menu{display:block}
+audio,canvas,video{display:inline-block;*display:inline;*zoom:1}
+blockquote:before,blockquote:after,q:before,q:after{content:"\0020"}
+textarea{overflow:auto;resize:vertical}
+input,textarea,button,select,a{outline:0 none;border: none;}
+button::-moz-focus-inner,input::-moz-focus-inner{padding:0;border:0}
+mark{background-color:transparent}
+a,ins,s,u,del{text-decoration:none}
+sup,sub{vertical-align:baseline}
+html {-webkit-tap-highlight-color: transparent;}
+a {color: #1271EF;text-decoration: none;}
+.clearfix{zoom:1}
+.clearfix:after{content:'';display:block;clear:both}
+input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px white inset !important;
+}
+
+body
+  // background #F5F5F5
+  height 100%
+  width 100%
+  margin 0
+  overflow auto
+  box-sizing border-box
+  background-color #f5f5f5
+  -moz-osx-font-smoothing grayscale
+  -webkit-font-smoothing antialiased
+  text-rendering optimizeLegibility
+  -webkit-text-size-adjust none
+  font-family PingFangSC-Regular, sans-serif, Inter, Helvetica Neue,Helvetica,PingFang SC,Hiragino Sans GB,Microsoft YaHei,SimSun
+
+html
+  height 100%
+  width 100%
+  overflow auto
+  text-size-adjust 100%
+
+a,
+a:focus,
+a:hover
+  cursor pointer
+  color inherit
+  outline none
+  text-decoration none
+
+.clearfix
+  &:after
+    visibility hidden
+    display block
+    font-size 0
+    content " "
+    clear both
+    height 0

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="432px" height="378px" viewBox="0 0 432 378" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 59.1 (86144) - https://sketch.com -->
+    <title>矩形备份 6</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <rect id="path-1" x="0" y="0" width="432" height="378" rx="10"></rect>
+    </defs>
+    <g id="pc版本" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="销售管理" transform="translate(-839.000000, -1007.000000)">
+            <g id="矩形备份-6" transform="translate(839.000000, 1007.000000)">
+                <mask id="mask-2" fill="white">
+                    <use xlink:href="#path-1"></use>
+                </mask>
+                <use id="蒙版" fill="#FFFFFF" xlink:href="#path-1"></use>
+                <path d="M-41,-207 L774,-207 L774,75.1099973 C705.126761,120.305914 607.73026,129.782477 481.810499,103.539687 C355.890738,77.2968965 181.620572,67.8203332 -41,75.1099973 L-41,-207 Z" id="矩形备份-4" fill="#B4D9FF" mask="url(#mask-2)" transform="translate(366.500000, -44.500000) scale(-1, 1) translate(-366.500000, 44.500000) "></path>
+                <path d="M-253,-188 L528,-188 L528,81.9575666 C462,125.206582 368.666667,134.274924 248,109.162593 C127.333333,84.0502609 26,86.9960634 -56,118 L-253,-188 Z" id="矩形" fill="#2791FF" mask="url(#mask-2)"></path>
+                <text id="dispatch" opacity="0.10639881" mask="url(#mask-2)" font-family="PingFangSC-Semibold, PingFang SC" font-size="82" font-weight="500" fill="#FFFFFF" fill-opacity="0.85">
+                    <tspan x="-19.998" y="93"> DISPATCH</tspan>
+                </text>
+            </g>
+        </g>
+    </g>
+</svg>
