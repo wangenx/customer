@@ -37,7 +37,9 @@ import {
   Checkbox,
   Loading,
   Tree,
-  RadioButton
+  RadioButton,
+  Popconfirm,
+  Popover
 } from "element-ui";
 
 Vue.use(Menu);
@@ -71,6 +73,8 @@ Vue.use(Checkbox);
 Vue.use(Loading);
 Vue.use(Tree);
 Vue.use(RadioButton);
+Vue.use(Popconfirm);
+Vue.use(Popover);
 Vue.prototype.$message = Message;
 import "@/styles/index.stylus";
 

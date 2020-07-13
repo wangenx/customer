@@ -42,7 +42,6 @@ export default new Vuex.Store({
       state.currentMenu = name
     },
     SET_FOLD(state, b) {
-      console.log(b)
       state.fold = b
     }
   },

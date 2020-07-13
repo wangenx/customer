@@ -54,6 +54,7 @@ export default {
     height 40px
     line-height 40px
     margin-bottom 10px
+    border-left 2px solid #ffffff
   >>> .el-menu-item.is-active
     background-color #f1f7ff
     border-left 2px solid #4891fe
@@ -64,7 +65,7 @@ export default {
 
 .nav-icon
   display inline-block
-  width 48px
+  width 46px
   height 40px
   float left
 .nav-icon0
