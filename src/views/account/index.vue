@@ -70,7 +70,7 @@
           align="left"
           label="操作">
           <template slot-scope="scope">
-            <div class="operation" v-show="scope.row.child">
+            <div class="operation clearfix" v-show="scope.row.child">
               <span @click="editAccount(scope.row.id)">修改</span>
               <span></span>
               <el-popover
@@ -386,7 +386,7 @@ export default {
 
 <style lang="stylus" scoped>
 .account
-  min-width 1160
+  min-width 1160px
   overflow-y auto
   height 100%
   background-color #fff
@@ -458,16 +458,18 @@ export default {
       padding-right 12px
 
 .operation
-  span
+  > span
     font-size 14px
     color #1890FF
     cursor pointer
+    float left
   > span:first-child
     margin-right 8px
   > span:nth-child(2), > span:nth-child(4)
     display inline-block
     width 1px
     height 14px
+    margin-top 4px
     background-color #e9e9e9
     margin-right 8px
   > span:nth-child(4)
@@ -481,8 +483,7 @@ export default {
 .page
   margin-top 90px
   text-align right
-  padding-right 70px
-  padding-left 40px
+  padding 0 70px 26px 40px
   >>> .el-pagination.is-background .el-pager li:not(.disabled).active
     background-color #e2e2e2
     color #595959
@@ -507,7 +508,7 @@ export default {
     .el-dialog__title
       font-size 16px
   /deep/ .el-dialog__body
-    padding 0px 16px 38px
+    padding 0px 16px 22px
   /deep/ .el-dialog__footer
     padding 0 16px 16px
   /deep/ .el-input, /deep/ .el-select
