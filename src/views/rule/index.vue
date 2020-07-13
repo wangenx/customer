@@ -291,6 +291,7 @@ export default {
 .rule
   min-width 1160px
   overflow-x auto
+  min-height 100%
   background-color #fff
 
 .title
