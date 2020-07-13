@@ -387,8 +387,7 @@ export default {
 <style lang="stylus" scoped>
 .account
   min-width 1160px
-  overflow-y auto
-  height 100%
+  overflow-x auto
   background-color #fff
 
 .title
