@@ -1,7 +1,7 @@
 <template>
   <div class="rule">
     <div class="title">
-      账号管理
+      客户列表
     </div>
     <div class="rule-head clearfix">
       <div class="search">

@@ -39,7 +39,8 @@ import {
   Tree,
   RadioButton,
   Popconfirm,
-  Popover
+  Popover,
+  Tag
 } from "element-ui";
 
 Vue.use(Menu);
@@ -75,6 +76,7 @@ Vue.use(Tree);
 Vue.use(RadioButton);
 Vue.use(Popconfirm);
 Vue.use(Popover);
+Vue.use(Tag);
 Vue.prototype.$message = Message;
 import "@/styles/index.stylus";
 
