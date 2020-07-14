@@ -1,7 +1,7 @@
 <template>
   <div class="cusmoter">
     <div class="title">
-      账号管理
+      客户管理
     </div>
     <div class="cusmoter-head clearfix">
       <div class="search">
