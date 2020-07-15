@@ -153,7 +153,7 @@
             <span class="addCondition"><i class="el-icon-plus"></i>新增</span>
           </el-form-item>
           <el-form-item label="分配给" prop="region">
-            <el-select v-model="ruleForm.region" placeholder="请选择">
+            <el-select v-model="ruleForm.region" filterable placeholder="请选择">
               <el-option label="分组一" value="shanghai"></el-option>
               <el-option label="分组二" value="beijing"></el-option>
             </el-select>

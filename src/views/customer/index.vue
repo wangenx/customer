@@ -181,7 +181,7 @@
             </div>
           </el-form-item>
           <el-form-item label="所属人" prop="region">
-            <el-select v-model="cusmoterForm.region" placeholder="请选择">
+            <el-select v-model="cusmoterForm.region" filterable placeholder="请选择">
               <el-option label="销售1" value="xiaoshouyi"></el-option>
               <el-option label="销售2" value="销售2"></el-option>
             </el-select>
@@ -200,7 +200,7 @@
         <div class="dialog-line"></div>
         <el-form :model="distributionRuleForm" :rules="distributionRules" size="small" ref="distributionRuleForm" label-width="100px" label-position="top" class="demo-ruleForm">
           <el-form-item label="所属人" prop="region">
-            <el-select v-model="distributionRuleForm.region" placeholder="请选择">
+            <el-select v-model="distributionRuleForm.region" filterable placeholder="请选择">
               <el-option label="分组一" value="shanghai"></el-option>
               <el-option label="分组二" value="beijing"></el-option>
             </el-select>
@@ -311,6 +311,7 @@ export default {
         position: '',
         checkedTags: []
       },
+      addTag: '',
       rules: {
         classification: [
            { required: true, message: '请选择客户分级', trigger: 'change' }
