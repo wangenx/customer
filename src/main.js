@@ -84,7 +84,7 @@ router.beforeEach((to, from, next) => {
   /* 必须调用 `next` */
   router.options.routes.forEach(item => {
     if (item.path === '/home') {
-      store.commit('SET_MENU', item.children)
+      store.dispatch('Set_Menu', item.children)
     }
   })
   store.commit('SET_CURRENTMENU', to.path.slice(6))

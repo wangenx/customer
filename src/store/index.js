@@ -1,6 +1,6 @@
 import Vue from "vue";
 import Vuex from "vuex";
-// import { login, loginOut } from "@/api/api";
+import { login } from "@/api/api";
 
 Vue.use(Vuex);
 
@@ -46,25 +46,30 @@ export default new Vuex.Store({
     }
   },
   actions: {
-    // SET_MENU ({ commit }, data)
-    // // 登录
-    // Login({ commit }, data) {
-    //   return new Promise((resolve, reject) => {
-    //     login(data)
-    //       .then(res => {
-    //         if (res.code === 200) {
-    //           commit("LOGIN_IN", res.data.api_token);
-    //           commit("SET_NAME", res.data.name);
-    //           resolve(res);
-    //         } else {
-    //           reject(res);
-    //         }
-    //       })
-    //       .catch(error => {
-    //         console.log(error);
-    //       });
-    //   });
-    // },
+    Set_Menu ({ commit }, data) {
+      commit('SET_MENU', data)
+    },
+    // 登录
+    Login ({ commit }, data) {
+      return new Promise((resolve, reject) => {
+        login(data)
+          .then(res => {
+            if (res.code === 0) {
+              console.log(res)
+              commit("LOGIN_IN", res.data.jwtToken);
+              commit("SET_NAME", res.data.sysUser.realName);
+              resolve(res);
+            } else {
+              reject(res);
+            }
+          })
+          .catch(error => {
+            console.log(error);
+          });
+      }).catch(e => {
+        console.log(e)
+      });
+    }
     // 退出登录
     // LoginOut({ commit }) {
     //   return new Promise((resolve, reject) => {

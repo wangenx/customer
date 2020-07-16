@@ -1,6 +1,7 @@
 <template>
   <div class="login clearfix">
     <div class="login-main">
+<<<<<<< HEAD
       <div class="login-left">
         <div class="left-icon"></div>
       </div>
@@ -15,6 +16,19 @@
           </el-form-item>
           <el-form-item>
             <el-button @click="$router.push('home')">登录</el-button>
+=======
+      <div class="login-con" v-show="isLogin">
+        <div class="title">LOGIN</div>
+        <el-form :model="loginFuleForm" :rules="loginRules" ref="loginFuleForm" class="demo-ruleForm">
+          <el-form-item prop="username">
+            <el-input v-model="loginFuleForm.username"></el-input>
+          </el-form-item>
+          <el-form-item prop="password">
+            <el-input type="password" v-model="loginFuleForm.password"></el-input>
+          </el-form-item>
+          <el-form-item>
+            <el-button @click="submitForm('loginFuleForm')">登录</el-button>
+>>>>>>> 22ad3b97ff9be69c9de57a64274c81419d411cd9
           </el-form-item>
         </el-form>
         <div class="forget-pass">
@@ -55,7 +69,11 @@
 export default {
   data() {
     return {
+<<<<<<< HEAD
       ruleFormLogin: {
+=======
+      loginFuleForm: {
+>>>>>>> 22ad3b97ff9be69c9de57a64274c81419d411cd9
         username: '',
         password: ''
       },
@@ -65,7 +83,11 @@ export default {
         code: '',
         passwordAgin: ''
       },
+<<<<<<< HEAD
       loginLules: {
+=======
+      loginRules: {
+>>>>>>> 22ad3b97ff9be69c9de57a64274c81419d411cd9
         username: [
           { required: true, message: '请输入账号', trigger: 'blur' }
         ],
@@ -89,25 +111,61 @@ export default {
       },
       isLogin: true
     }
+  },
+  methods: {
+    submitForm(formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          this.$store.dispatch('Login', this.loginFuleForm)
+          this.$router.push('home')
+        } else {
+          console.log('error submit!!');
+          return false;
+        }
+      });
+    }
   }
-};
+}
 </script>
 <style lang="stylus" scoped>
 .login
+<<<<<<< HEAD
   min-width 1334px
   min-height 789px
   background url('../../assets/images/login-bg.png') no-repeat
   background-size auto 100%
   // padding-top 126px
   height 100vh
+=======
+  height 100vh
+  min-width 1334px
+  max-width 2428px
+  min-height 770px
+  background url('../../assets/images/login-bg.png') no-repeat
+  background-size auto 100%
+  background-color #fff
+>>>>>>> 22ad3b97ff9be69c9de57a64274c81419d411cd9
   .login-main
     width 100%
     padding-top 80px
     height 580px
+<<<<<<< HEAD
     margin 0 auto
     // background-color #fff
     // border-radius 10px
     // box-shadow 0px 4px 18px 0px rgba(0, 0, 0, 0.3)
+=======
+    padding-top 6%
+    margin-left 440px
+    // background-color #fff
+    // border-radius 10px
+    // box-shadow 0px 4px 18px 0px rgba(0, 0, 0, 0.3)
+
+@media screen and (max-height: 770px)
+  .login-main
+    margin-left 200px !important
+
+>>>>>>> 22ad3b97ff9be69c9de57a64274c81419d411cd9
 
 .login-con
   width 430px

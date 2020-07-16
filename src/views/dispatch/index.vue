@@ -53,6 +53,7 @@
               type="daterange"
               range-separator="-"
               size="small"
+              value-format="yy-MM-dd mm-dd-ss"
               start-placeholder="开始日期"
               end-placeholder="结束日期">
             </el-date-picker>
@@ -61,50 +62,50 @@
         <div class="tabel">
           <el-table
             :data="tableData"
-            :default-sort = "{prop: 'distribution', order: 'descending'}"
+            :default-sort = "{prop: 'totalClue', order: 'descending'}"
             style="width: 100%">
             <el-table-column
-              prop="name"
+              prop="userName"
               label="账户名">
             </el-table-column>
             <el-table-column
-              prop="distribution"
+              prop="totalClue"
               align="center"
               sortable
               label="分配线索">
             </el-table-column>
             <el-table-column
-              prop="phone"
+              prop="totalPhoneCount"
               align="center"
               sortable
               label="拨通电话">
             </el-table-column>
             <el-table-column
-              prop="duration"
+              prop="totalPhoneTime"
               align="center"
               sortable
               label="通话总时长">
             </el-table-column>
             <el-table-column
-              prop="enterCustomer"
+              prop="totalCustom"
               align="center"
               sortable
               label="录入客户">
             </el-table-column>
             <el-table-column
-              prop="aCustomer"
+              prop="totalACustom"
               align="center"
               sortable
               label="A类客户">
             </el-table-column>
             <el-table-column
-              prop="transactionCustomer"
+              prop="totalFinishCustom"
               align="center"
               sortable
               label="成交客户">
             </el-table-column>
             <el-table-column
-              prop="overtime"
+              prop="totalExpiredTask"
               align="center"
               sortable
               label="超时任务">
@@ -116,11 +117,11 @@
             background
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
-            :current-page="page.page"
+            :current-page="pagination.page"
             :page-sizes="[100, 200, 300, 400]"
-            :page-size="100"
+            :page-size="pagination.pageSize"
             layout="prev, pager, next, sizes, jumper"
-            :total="400">
+            :total="pagination.total">
           </el-pagination>
         </div>
       </div>
@@ -173,6 +174,7 @@
 </template>
 
 <script>
+import { dispatchList } from '@/api/api'
 export default {
   data () {
     return {
@@ -216,19 +218,31 @@ export default {
         transactionCustomer: '34562',
         overtime: '34562'
       }],
-      page: {
-        page: 5
+      pagination: {
+        page: 1,
+        pageSize: 10,
+        total: 0
       },
       form: {
         region: '',
         num: '',
-        date: '',
+        date: [],
         num1: ''
       },
       dialogShow: false
     }
   },
+  created () {
+    this.getList()
+  },
   methods: {
+    getList () {
+      dispatchList().then(res => {
+        if (res.code === 0) {
+          this.tableData = res.data.personTasks
+        }
+      })
+    },
     handleSizeChange(val) {
       console.log(`每页 ${val} 条`);
     },
