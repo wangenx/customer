@@ -235,7 +235,7 @@ export default {
         children: [{
             id: 29,
             date: '2016-05-01',
-            name: '王小虎',
+            name: '账号名',
             operation: '',
             child: true,
             isPop: false

@@ -1,17 +1,17 @@
 <template>
   <div class="login clearfix">
     <div class="login-main">
-      <div class="login-con" v-show="!isLogin">
+      <div class="login-con" v-show="isLogin">
         <div class="title">LOGIN</div>
-        <el-form :model="ruleForm" :rules="rules" ref="ruleForm" class="demo-ruleForm">
+        <el-form :model="loginFuleForm" :rules="loginRules" ref="loginFuleForm" class="demo-ruleForm">
           <el-form-item prop="username">
-            <el-input v-model="ruleForm.username"></el-input>
+            <el-input v-model="loginFuleForm.username"></el-input>
           </el-form-item>
           <el-form-item prop="password">
-            <el-input type="password" v-model="ruleForm.password"></el-input>
+            <el-input type="password" v-model="loginFuleForm.password"></el-input>
           </el-form-item>
           <el-form-item>
-            <el-button>登录</el-button>
+            <el-button @click="submitForm('loginFuleForm')">登录</el-button>
           </el-form-item>
         </el-form>
         <div class="forget-pass">
@@ -20,7 +20,7 @@
           <span>忘记密码</span>
         </div>
       </div>
-      <div class="login-con forget-password" v-show="isLogin">
+      <div class="login-con forget-password" v-show="!isLogin">
         <div class="title forget-title">忘记密码</div>
         <el-form :model="ruleForm" :rules="rules" ref="ruleForm" class="demo-ruleForm">
           <el-form-item prop="username">
@@ -48,11 +48,23 @@
 export default {
   data() {
     return {
+      loginFuleForm: {
+        username: '',
+        password: ''
+      },
       ruleForm: {
         username: '',
         password: '',
         code: '',
         passwordAgin: ''
+      },
+      loginRules: {
+        username: [
+          { required: true, message: '请输入账号', trigger: 'blur' }
+        ],
+        password: [
+          { required: true, message: '请输入密码', trigger: 'blur' }
+        ]
       },
       rules: {
         username: [
@@ -70,19 +82,44 @@ export default {
       },
       isLogin: true
     }
+  },
+  methods: {
+    submitForm(formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          this.$store.dispatch('Login', this.loginFuleForm)
+          this.$router.push('home')
+        } else {
+          console.log('error submit!!');
+          return false;
+        }
+      });
+    }
   }
-};
+}
 </script>
 <style lang="stylus" scoped>
 .login
-  padding-top 126px
+  height 100vh
+  min-width 1334px
+  max-width 2428px
+  min-height 770px
+  background url('../../assets/images/login-bg.png') no-repeat
+  background-size auto 100%
+  background-color #fff
   .login-main
     width 952px
     height 580px
-    margin 0 auto
-    background-color #fff
-    border-radius 10px
-    box-shadow 0px 4px 18px 0px rgba(0, 0, 0, 0.3)
+    padding-top 6%
+    margin-left 440px
+    // background-color #fff
+    // border-radius 10px
+    // box-shadow 0px 4px 18px 0px rgba(0, 0, 0, 0.3)
+
+@media screen and (max-height: 770px)
+  .login-main
+    margin-left 200px !important
+
 
 .login-con
   width 430px

@@ -1,0 +1,24 @@
+{
+  "code": 0,   
+  "message": "成功",
+   "data": {
+    "personTasks":[
+      {
+        "userName": "18810001000",
+        "realName": "张三",
+        "staffId": "1527",
+        "totalClue": "100",
+        "totalPhoneCount": 99,
+        "totalPhoneTime": "5小时",
+        "totalCustom": 500,
+        "totalExpiredTask": 299,
+        "totalACustom": 59,
+        "totalFinishCustom": 60
+      }
+    ]
+   },
+   "pageNo":"1",
+   "pageSize":"10",
+   "totalPage":"10",
+   "totalCount":"99"
+}

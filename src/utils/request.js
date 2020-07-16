@@ -16,7 +16,7 @@ const service = axios.create({
 service.interceptors.request.use(
   config => {
     if (store.state.UserToken) {
-      config.headers["Authorization"] = "Bearer " + store.state.UserToken; // 让每一个请求携带自定义token 请根据实际情况自行修改
+      config.headers["Authorization"] = store.state.UserToken; // 让每一个请求携带自定义token 请根据实际情况自行修改
     }
     return config;
   },
@@ -56,15 +56,11 @@ service.interceptors.response.use(
       } 
       return response.data;
     } else {
-      Message({
-        message: response.data.msg,
-        type: 'error',
-        duration: 5 * 1000
-      })
       return response.data;
     }
   },
   error => {
+    console.log(error)
     if (error.response.status === 401) {
       Message({
         message: error.response.data.msg,
