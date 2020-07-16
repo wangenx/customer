@@ -9,14 +9,14 @@
         <div class="main clearfix">
           <div class="quota">
             <div>现有额度/总购买额度</div>
-            <div>5874/67487</div>
+            <div>{{ totalQuery.currentQuota }}/{{ totalQuery.totalQuota }}</div>
           </div>
           <div class="balance">
             <div>账户余额</div>
-            <div>32万元</div>
+            <div>{{ totalQuery.restMoney }}万元</div>
           </div>
         </div>
-        <div class="price" @click="dialogShow = true">派单 0.6元/条</div>
+        <div class="price" @click="dialogShow = true">派单 {{ totalQuery.perCastMoney }}元/条</div>
       </div>
     </div>
     <div class="situation">
@@ -24,36 +24,37 @@
       <div class="con">
         <div class="search clearfix">
           <div class="left">
-            <el-input v-model="input" size="small" placeholder="请输入内容"></el-input>
-            <el-button size="small" type="primary">查询</el-button>
+            <el-input v-model="searchData.key" size="small" placeholder="请输入内容"></el-input>
+            <el-button size="small" type="primary" @click="getList()">查询</el-button>
           </div>
           <div class="right">
-            <el-select v-model="value" size="small" placeholder="请选择">
+            <el-select v-model="searchData.groupId" size="small" placeholder="请选择">
               <el-option
-                v-for="item in options"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value">
+                v-for="item in accountQuery"
+                :key="item.groupId"
+                :label="item.groupName"
+                :value="item.groupId">
               </el-option>
             </el-select>
-            <el-select v-model="value1" size="small" placeholder="请选择">
+            <el-select v-model="searchData.taskId" size="small" placeholder="请选择">
               <el-option
-                v-for="item in options"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value">
+                v-for="item in taskList"
+                :key="item.taskId"
+                :label="item.taskName"
+                :value="item.taskId">
               </el-option>
             </el-select>
-            <el-radio-group v-model="radio" size="small">
-              <el-radio-button label="本日"></el-radio-button>
-              <el-radio-button label="本月"></el-radio-button>
+            <el-radio-group v-model="searchData.dateType" @change="searchData.date = []" size="small">
+              <el-radio-button label="1">本日</el-radio-button>
+              <el-radio-button label="2">本月</el-radio-button>
             </el-radio-group>
             <el-date-picker
-              v-model="date"
+              v-model="searchData.date"
+              @change="searchData.dateType = ''"
               type="daterange"
               range-separator="-"
               size="small"
-              value-format="yy-MM-dd mm-dd-ss"
+              value-format="yy-MM-dd"
               start-placeholder="开始日期"
               end-placeholder="结束日期">
             </el-date-picker>
@@ -62,7 +63,8 @@
         <div class="tabel">
           <el-table
             :data="tableData"
-            :default-sort = "{prop: 'totalClue', order: 'descending'}"
+            @sort-change="sort"
+            :default-sort = "{prop: 'date', order: 'descending'}"
             style="width: 100%">
             <el-table-column
               prop="userName"
@@ -71,7 +73,7 @@
             <el-table-column
               prop="totalClue"
               align="center"
-              sortable
+              sortable="custom"
               label="分配线索">
             </el-table-column>
             <el-table-column
@@ -132,32 +134,37 @@
         <div class="dialog-top"></div>
         <el-form ref="form" :model="form" label-width="124px">
           <el-form-item label="指派给：">
-            <el-select v-model="form.region" size="small" placeholder="选择分组">
-              <el-option label="区域一" value="shanghai"></el-option>
-              <el-option label="区域二" value="beijing"></el-option>
+            <el-select v-model="form.groupId" size="small" placeholder="请选择分组">
+              <el-option
+                v-for="item in accountQuery"
+                :key="item.groupId"
+                :label="item.groupName"
+                :value="item.groupId">
+              </el-option>
             </el-select>
           </el-form-item>
           <el-form-item label="购买条数：">
-            <el-input v-model="form.num" size="small" placeholder="请输入条数"></el-input>
+            <el-input v-model="form.purchaseNum" @change="changePurchaseNum" size="small" placeholder="请输入条数"></el-input>
           </el-form-item>
           <el-form-item label="超时设置：">
             <el-date-picker
-              v-model="form.date"
+              v-model="form.expirationDate"
               type="date"
               size="small"
+              value-format="yy-MM-dd"
               placeholder="选择日期">
             </el-date-picker>
           </el-form-item>
           <el-form-item label="已超时回收条数：">
-            <el-input v-model="form.num1" size="small" placeholder="请输入条数"></el-input>
+            <el-input v-model="form.expirationNum" @change="changePurchaseNum" size="small" placeholder="请输入条数"></el-input>
           </el-form-item>
         </el-form>
         <div class="dialog-price">
-          <div class="calculation clearfix" v-show="true">
+          <div class="calculation clearfix" v-show="isCalculation">
             <div class="price-icon"></div>
             <div>价格方案计算中。。。</div>
           </div>
-          <div class="programme clearfix" v-show="false">
+          <div class="programme clearfix" v-show="!isCalculation">
             <div class="price-icon"></div>
             <div class="programme-font">
               <div>价格方案：（3000条-30条）*0.6元= 4000元</div>
@@ -165,79 +172,112 @@
             </div>
           </div>
         </div>
-        <div class="save" @click="dialogShow = false">派单</div>
-        <div class="number-tips">0.6/条</div>
-        <div class="overtime-recovery">现有剩余37条</div>
+        <div class="save" @click="taskSubmit">派单</div>
+        <div class="number-tips">{{ totalQuery.perCastMoney }}/条</div>
+        <div class="overtime-recovery">现有剩余{{ taskExpirationNum }}条</div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { dispatchList } from '@/api/api'
+import { dispatchList, postTotalQuery, postAccountQuery, postTaskQuery, postTaskExpiration, postTaskCreate } from '@/api/api'
 export default {
   data () {
     return {
-      input: '',
-      options: [{
-        value: '选项1',
-        label: '人员分组'
-      }, {
-        value: '选项2',
-        label: '任务'
-      }, {
-        value: '选项3',
-        label: '蚵仔煎'
-      }, {
-        value: '选项4',
-        label: '龙须面'
-      }, {
-        value: '选项5',
-        label: '北京烤鸭'
-      }],
-      value: '人员分组',
-      value1: '任务',
-      radio: '本日',
-      date: [],
-      tableData: [{
-        distribution: '34562',
-        name: '思林兰卡',
-        phone: '34562',
-        duration: '34小时56分',
-        enterCustomer: '34562',
-        aCustomer: '34562',
-        transactionCustomer: '34562',
-        overtime: '34562'
-      }, {
-        distribution: '34562',
-        name: '托尔斯泰',
-        phone: '34562',
-        duration: '34小时56分',
-        enterCustomer: '34562',
-        aCustomer: '34562',
-        transactionCustomer: '34562',
-        overtime: '34562'
-      }],
+      totalQuery: {}, // 额度
+      searchData: {
+        key: '',
+        groupId: '',
+        taskId: '',
+        dateType: '',
+        pageNo: '',
+        date: [],
+        sortStr: '',
+        sortType: ''
+      },
+      accountQuery: [], // 分组list
+      taskList: [], // 任务list
+      tableData: [],
       pagination: {
         page: 1,
         pageSize: 10,
         total: 0
       },
       form: {
-        region: '',
-        num: '',
-        date: [],
-        num1: ''
+        groupId: '',
+        purchaseNum: '',
+        expirationDate: '',
+        expirationNum: ''
       },
-      dialogShow: false
+      dialogShow: false,
+      taskExpirationNum: 0,
+      isCalculation: true
     }
   },
   created () {
+    this.totalQueryData()
     this.getList()
+    postAccountQuery().then(res => {
+      if (res.code === 0) {
+        this.accountQuery = res.data.groups
+      }
+    })
+    postTaskQuery().then(res => {
+      if (res.code === 0) {
+        this.taskList = res.data.subTasks
+      }
+    })
+    postTaskExpiration().then(res => {
+      if (res.code === 0) {
+        this.taskExpirationNum =  res.data.totalCount
+      }
+    })
   },
   methods: {
+    // 派单提交
+    taskSubmit () {
+      const params = {
+        groupId: this.form.groupId,
+        purchaseNum: this.form.purchaseNum,
+        expirationDate: this.form.expirationDate,
+        expirationNum: this.form.expirationNum
+      }
+      postTaskCreate(params).then(res => {
+        if (res.code === 0) {
+          this.$message.success('派单成功')
+          this.dialogShow = false
+        }
+      })
+    },
+    // 是否显示计算
+    changePurchaseNum () {
+      if (this.form.purchaseNum !== '' && this.form.expirationNum !== '') {
+        this.isCalculation = false
+      } else {
+        this.isCalculation = true
+      }
+    },
+    // 排序
+    sort(row) {
+      this.searchData.sortStr = row.prop
+      this.searchData.sortType = row.order
+      this.getList()
+    },
     getList () {
-      dispatchList().then(res => {
+      const params = {
+        key: this.searchData.key,
+        groupId: this.searchData.groupId,
+        taskId: this.searchData.taskId,
+        dateType: this.searchData.dateType,
+        beginTime: this.searchData.date[0],
+        endTime: this.searchData.date[1],
+        sortStr: this.searchData.sortStr,
+        sortType: this.searchData.sortType,
+        pageNo: this.pagination.page,
+        pageSize: this.pagination.pageSize
+      }
+      dispatchList(params).then(res => {
         if (res.code === 0) {
           this.tableData = res.data.personTasks
         }
@@ -247,7 +287,16 @@ export default {
       console.log(`每页 ${val} 条`);
     },
     handleCurrentChange(val) {
-      console.log(`当前页: ${val}`);
+      this.pagination.page = val
+      this.getList()
+    },
+    // 获取额度
+    totalQueryData () {
+      postTotalQuery().then(res => {
+        if (res.code === 0) {
+          this.totalQuery = res.data
+        }
+      })
     }
   }
 }

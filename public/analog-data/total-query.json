@@ -1,0 +1,10 @@
+{
+    "code": 0,   
+    "message": "成功",
+     "data":{
+     	"currentQuota":"5867",
+	 	"totalQuota":"67487",
+	 	"restMoney":"32",
+	 	"perCastMoney":"0.6"
+     }
+}

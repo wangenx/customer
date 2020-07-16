@@ -1,34 +1,20 @@
 <template>
   <div class="login clearfix">
     <div class="login-main">
-<<<<<<< HEAD
       <div class="login-left">
         <div class="left-icon"></div>
       </div>
       <div class="login-con" v-show="isLogin">
         <div class="title">LOGIN</div>
-        <el-form :model="ruleFormLogin" :rules="loginLules" ref="ruleForm" class="demo-ruleForm">
-          <el-form-item prop="username">
-            <el-input v-model="ruleFormLogin.username" placeholder="请输入账号"></el-input>
-          </el-form-item>
-          <el-form-item prop="password">
-            <el-input type="password" v-model="ruleFormLogin.password" placeholder="请输入密码"></el-input>
-          </el-form-item>
-          <el-form-item>
-            <el-button @click="$router.push('home')">登录</el-button>
-=======
-      <div class="login-con" v-show="isLogin">
-        <div class="title">LOGIN</div>
         <el-form :model="loginFuleForm" :rules="loginRules" ref="loginFuleForm" class="demo-ruleForm">
           <el-form-item prop="username">
-            <el-input v-model="loginFuleForm.username"></el-input>
+            <el-input v-model="loginFuleForm.username" placeholder="输入账号"></el-input>
           </el-form-item>
           <el-form-item prop="password">
-            <el-input type="password" v-model="loginFuleForm.password"></el-input>
+            <el-input type="password" v-model="loginFuleForm.password" placeholder="输入密码"></el-input>
           </el-form-item>
           <el-form-item>
             <el-button @click="submitForm('loginFuleForm')">登录</el-button>
->>>>>>> 22ad3b97ff9be69c9de57a64274c81419d411cd9
           </el-form-item>
         </el-form>
         <div class="forget-pass">
@@ -40,25 +26,26 @@
       <div class="login-con forget-password" v-show="!isLogin">
         <div class="title forget-title">忘记密码</div>
         <el-form :model="ruleForm" :rules="rules" ref="ruleForm" class="demo-ruleForm">
-          <el-form-item prop="username">
-            <el-input v-model="ruleForm.username" placeholder="请输入手机号"></el-input>
+          <el-form-item prop="userName">
+            <el-input v-model="ruleForm.userName" placeholder="请输入手机号"></el-input>
           </el-form-item>
-          <el-form-item prop="username">
-            <el-input v-model="ruleForm.code" placeholder="请输入验证码"></el-input>
+          <el-form-item prop="code">
+            <el-input v-model="ruleForm.code" maxlength="6" minlength="6" placeholder="请输入验证码"></el-input>
           </el-form-item>
-          <el-form-item prop="password">
-            <el-input type="password" v-model="ruleForm.password" placeholder="请输入新密码"></el-input>
+          <el-form-item prop="newPassword">
+            <el-input type="password" v-model="ruleForm.newPassword" placeholder="请输入新密码"></el-input>
           </el-form-item>
           <el-form-item prop="passwordAgin">
             <el-input type="password" v-model="ruleForm.passwordAgin" placeholder="确认新密码"></el-input>
           </el-form-item>
           <el-form-item>
-            <el-button>登录</el-button>
+            <el-button @click="editSubmit('ruleForm')">确认</el-button>
           </el-form-item>
         </el-form>
-        <div class="send-code">
+        <div class="send-code" :class="[ isSend ? 'send-after' : '' ]">
           <span></span>
-          <span>发送验证码</span>
+          <span v-show="!isSend" @click="sendCode">发送验证码</span>
+          <span v-show="isSend">{{ num }} 秒后重新发送</span>
         </div>
         <div class="go-login" @click="isLogin = true">返回登录</div>
       </div>
@@ -66,28 +53,31 @@
   </div>
 </template>
 <script>
+import { sendCode, editPassword } from '@/api/api'
 export default {
   data() {
+    var validatePass2 = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('请再次输入密码'))
+      } else if (value !== this.ruleForm.newPassword) {
+        callback(new Error('两次输入密码不一致!'))
+      } else {
+        callback();
+      }
+    }
     return {
-<<<<<<< HEAD
-      ruleFormLogin: {
-=======
+      isSend: false,
       loginFuleForm: {
->>>>>>> 22ad3b97ff9be69c9de57a64274c81419d411cd9
         username: '',
         password: ''
       },
       ruleForm: {
-        username: '',
-        password: '',
+        userName: '',
+        newPassword: '',
         code: '',
         passwordAgin: ''
       },
-<<<<<<< HEAD
-      loginLules: {
-=======
       loginRules: {
->>>>>>> 22ad3b97ff9be69c9de57a64274c81419d411cd9
         username: [
           { required: true, message: '请输入账号', trigger: 'blur' }
         ],
@@ -96,83 +86,128 @@ export default {
         ]
       },
       rules: {
-        username: [
+        userName: [
           { required: true, message: '请输入手机号', trigger: 'blur' }
         ],
-        password: [
-          { required: true, message: '请输入新密码', trigger: 'blur' }
+        newPassword: [
+          { required: true, message: '请输入新密码', trigger: 'blur' },
         ],
         code: [
           { required: true, message: '请输入验证码', trigger: 'blur' }
         ],
         passwordAgin: [
-          { required: true, message: '确认新密码', trigger: 'blur' }
+          { validator: validatePass2, trigger: 'blur'}
         ]
       },
-      isLogin: true
+      isLogin: true,
+      num: 5,
+      interval: null
     }
   },
   methods: {
     submitForm(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          this.$store.dispatch('Login', this.loginFuleForm)
-          this.$router.push('home')
+          this.$store.dispatch('Login', this.loginFuleForm).then(res => {
+            if (res.code === 0) {
+              this.$router.push('home')
+            }
+          })
         } else {
           console.log('error submit!!');
           return false;
         }
       });
+    },
+    // 修改密码
+    editSubmit (formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          const params = {
+            userName: this.ruleForm.userName,
+            code: this.ruleForm.code,
+            newPassword: this.ruleForm.newPassword
+          }
+          editPassword(params).then(res => {
+            if (res.code === 0) {
+              this.$message.success('修改密码成功')
+              this.isLogin = true
+              this.$refs[formName].resetFields()
+            }
+          })
+        } else {
+          console.log('error submit!!');
+          return false;
+        }
+      });
+    },
+    // 发送验证码
+    sendCode () {
+      if (this.ruleForm.phone === '') {
+        this.$message.warning('请输入手机号')
+        return
+      }
+      sendCode().then(res => {
+        if (res.code === 0) {
+          this.isSend = true
+          this.time()
+        }
+      })
+    },
+    time () {
+      this.interval = setInterval(() => {
+        this.num--
+        if (this.num === 0) {
+          clearInterval(this.interval)
+          this.isSend = false
+        }
+      }, 1000)
     }
   }
 }
 </script>
 <style lang="stylus" scoped>
 .login
-<<<<<<< HEAD
-  min-width 1334px
-  min-height 789px
-  background url('../../assets/images/login-bg.png') no-repeat
-  background-size auto 100%
-  // padding-top 126px
   height 100vh
-=======
-  height 100vh
-  min-width 1334px
-  max-width 2428px
-  min-height 770px
-  background url('../../assets/images/login-bg.png') no-repeat
-  background-size auto 100%
+  padding-top 80px
+  // background url('../../assets/images/login-bg.png') no-repeat
+  // background-size 100% 100%
   background-color #fff
->>>>>>> 22ad3b97ff9be69c9de57a64274c81419d411cd9
   .login-main
-    width 100%
-    padding-top 80px
+    width 952px
+    // padding-top 80px
     height 580px
-<<<<<<< HEAD
     margin 0 auto
+    // margin-left 340px
     // background-color #fff
     // border-radius 10px
-    // box-shadow 0px 4px 18px 0px rgba(0, 0, 0, 0.3)
-=======
-    padding-top 6%
-    margin-left 440px
-    // background-color #fff
-    // border-radius 10px
-    // box-shadow 0px 4px 18px 0px rgba(0, 0, 0, 0.3)
+    box-shadow 0px 4px 18px 0px rgba(0, 0, 0, 0.3)
 
-@media screen and (max-height: 770px)
-  .login-main
-    margin-left 200px !important
+// @media screen and (min-height: 789px)
+//   .login
+//     .login-main
+//       margin-left 300px
 
->>>>>>> 22ad3b97ff9be69c9de57a64274c81419d411cd9
+// @media (min-height: 789px) and (max-height 889px)
+//   .login
+//     .login-main
+//       margin-left 340px
+
+// @media (min-height 890px) and (max-height 989px)
+//   .login
+//     .login-main
+//       margin-left 460px
+
+// @media (min-height 990px) and (max-height 1089px)
+//   .login
+//     .login-main
+//       margin-left 540px
 
 .login-con
-  width 430px
-  float left
-  margin-left 380px
-  padding-left 48px
+  width calc(50% - 48px)
+  float right
   padding-top 84px
+  padding-left 48px
   .title
     width 344px
     font-size 48px
@@ -193,6 +228,7 @@ export default {
       line-height 48px
       border none
       border-radius 10px
+      font-size 16px
       background-color #efefef
     /deep/ .el-button
       padding 15px 154px
@@ -201,7 +237,7 @@ export default {
       color #ffffff
       font-size 18px
     /deep/ .el-form-item:last-child
-      margin-bottom 16px  
+      margin-bottom 16px
   .forget-pass
     width 344px
     text-align right
@@ -234,7 +270,7 @@ export default {
   .send-code
     position absolute
     width 130px
-    right 78px
+    right 74px
     top 220px
     span
       float left
@@ -243,20 +279,26 @@ export default {
       width 1px
       height 36px
       background-color #b9b9b9
-    > span:last-child
+    > span:nth-child(2), > span:last-child
       color #4891fe
-      font-size 18px
+      font-size 16px
       line-height 36px
-      margin-left 20px
-      cursor pointer 
+      margin-left 10px
+      cursor pointer
+    > span:last-child
+      color #ff4441
+  .send-after
+    right 94px     
 
 .login-left
-  width 67px
+  width 50%
+  height 100%
   float left
-  margin-left 260px
-  padding-top 80px
+  background-color #AACCFF
   .left-icon
+    margin-left 38px
+    padding-top 38px
     width 67px
-    height 300px
+    height 290px
     background url('../../assets/images/login-left-icon.svg') no-repeat
 </style>
