@@ -120,7 +120,6 @@
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
             :current-page="pagination.page"
-            :page-sizes="[100, 200, 300, 400]"
             :page-size="pagination.pageSize"
             layout="prev, pager, next, sizes, jumper"
             :total="pagination.total">
@@ -280,6 +279,7 @@ export default {
       dispatchList(params).then(res => {
         if (res.code === 0) {
           this.tableData = res.data.personTasks
+          this.pagination.total = Number(res.totalCount)
         }
       })
     },
