@@ -131,8 +131,8 @@
       <div class="dialog-mask" @click="dialogShow = false"></div>
       <div class="dialog-main">
         <div class="dialog-top"></div>
-        <el-form ref="form" :model="form" label-width="124px">
-          <el-form-item label="指派给：">
+        <el-form :model="form" :rules="rules" ref="ruleForm" label-width="140px" class="demo-ruleForm">
+          <el-form-item label="指派给：" prop="groupId">
             <el-select v-model="form.groupId" size="small" placeholder="请选择分组">
               <el-option
                 v-for="item in accountQuery"
@@ -142,10 +142,10 @@
               </el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="购买条数：">
+          <el-form-item label="购买条数：" prop="purchaseNum">
             <el-input v-model="form.purchaseNum" @change="changePurchaseNum" size="small" placeholder="请输入条数"></el-input>
           </el-form-item>
-          <el-form-item label="超时设置：">
+          <el-form-item label="超时设置：" prop="expirationDate">
             <el-date-picker
               v-model="form.expirationDate"
               type="date"
@@ -154,7 +154,7 @@
               placeholder="选择日期">
             </el-date-picker>
           </el-form-item>
-          <el-form-item label="已超时回收条数：">
+          <el-form-item label="已超时回收条数：" prop="expirationNum">
             <el-input v-model="form.expirationNum" @change="changePurchaseNum" size="small" placeholder="请输入条数"></el-input>
           </el-form-item>
         </el-form>
@@ -171,7 +171,7 @@
             </div>
           </div>
         </div>
-        <div class="save" @click="taskSubmit">派单</div>
+        <div class="save" @click="taskSubmit('ruleForm')">派单</div>
         <div class="number-tips">{{ totalQuery.perCastMoney }}/条</div>
         <div class="overtime-recovery">现有剩余{{ taskExpirationNum }}条</div>
       </div>
@@ -183,6 +183,36 @@
 import { dispatchList, postTotalQuery, postAccountQuery, postTaskQuery, postTaskExpiration, postTaskCreate } from '@/api/api'
 export default {
   data () {
+    var validatePurchaseNum = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('请输入购买条数'))
+      } else {
+        callback()
+      }
+    }
+    var validateGroupId = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('请选择分组'))
+      } else {
+        callback()
+      }
+    }
+
+    var validateExpirationDate = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('请设置超时时间'))
+      } else {
+        callback()
+      }
+    }
+
+    var validateExpirationNum = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('请输入超时回收条数'))
+      } else {
+        callback()
+      }
+    }
     return {
       totalQuery: {}, // 额度
       searchData: {
@@ -208,6 +238,12 @@ export default {
         purchaseNum: '',
         expirationDate: '',
         expirationNum: ''
+      },
+      rules: {
+        groupId: [{ validator: validateGroupId, trigger: 'change' }],
+        purchaseNum: [{  validator: validatePurchaseNum, trigger: 'blur' }],
+        expirationDate: [{validator: validateExpirationDate, trigger: 'change' }],
+        expirationNum: [{ validator: validateExpirationNum, trigger: 'blur' }]
       },
       dialogShow: false,
       taskExpirationNum: 0,
@@ -235,19 +271,27 @@ export default {
   },
   methods: {
     // 派单提交
-    taskSubmit () {
-      const params = {
-        groupId: this.form.groupId,
-        purchaseNum: this.form.purchaseNum,
-        expirationDate: this.form.expirationDate,
-        expirationNum: this.form.expirationNum
-      }
-      postTaskCreate(params).then(res => {
-        if (res.code === 0) {
-          this.$message.success('派单成功')
-          this.dialogShow = false
+    taskSubmit (formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          const params = {
+            groupId: this.form.groupId,
+            purchaseNum: this.form.purchaseNum,
+            expirationDate: this.form.expirationDate,
+            expirationNum: this.form.expirationNum
+          }
+          postTaskCreate(params).then(res => {
+            if (res.code === 0) {
+              this.$message.success('派单成功')
+              this.dialogShow = false
+            }
+          })
+        } else {
+          console.log('error submit!!');
+          return false;
         }
-      })
+      });
+      
     },
     // 是否显示计算
     changePurchaseNum () {
@@ -441,7 +485,7 @@ export default {
     opacity 0.5
   .dialog-main
     width 432px
-    height 250px
+    height 300px
     padding-top 130px
     position absolute
     top calc(50% - 202px)
@@ -449,6 +493,9 @@ export default {
     z-index 1001
     background url('../../assets/images/dispatch-dialog-bg.png') no-repeat
     background-size 100%
+    background-color #fff
+    border-radius 10px
+
     .dialog-top
       width 185px
       height 125px
@@ -457,12 +504,12 @@ export default {
       left calc(50% - 92px)
       background url('../../assets/images/dispatch-dialog-top.png') no-repeat
     /deep/ .el-form
-      padding-left 62px
+      padding-left 36px
       /deep/ .el-select, /deep/ .el-input
         width 130px
         line-height 32px
-      /deep/ .el-form-item
-        margin-bottom 8px
+      // /deep/ .el-form-item
+      //   margin-bottom 8px
       /deep/ .el-form-item__label
         line-height 32px  
       /deep/ .el-form-item__content
@@ -482,8 +529,8 @@ export default {
       cursor pointer
     > .number-tips
       position absolute
-      left 324px
-      bottom 183px
+      left 312px
+      bottom 163px
       color #ff0000
       font-size 14px
       line-height 20px
@@ -491,8 +538,8 @@ export default {
       color #ff0000
       font-size 14px
       line-height 20px
-      left 324px
-      bottom 103px
+      left 312px
+      bottom 106px
       position absolute
 
 

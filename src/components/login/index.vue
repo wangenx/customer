@@ -39,7 +39,7 @@
             <el-input type="password" v-model="ruleForm.passwordAgin" placeholder="确认新密码"></el-input>
           </el-form-item>
           <el-form-item>
-            <el-button @click="editSubmit('ruleForm')">确认</el-button>
+            <el-button @click="editSubmit('ruleForm')">确定</el-button>
           </el-form-item>
         </el-form>
         <div class="send-code" :class="[ isSend ? 'send-after' : '' ]">

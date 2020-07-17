@@ -25,9 +25,69 @@
       <el-table
         :data="tableData"
         style="width: 100%;margin-bottom: 20px;"
-        row-key="id"
         @selection-change="handleSelectionChange">
-        :tree-props="{children: 'children', hasChildren: 'hasChildren'}">
+        <el-table-column type="expand">
+          <template>
+            <!-- <div class="groupName clearfix" :class="[props.row.child? 'groupName-no' : '']">
+              <div class="groupName" :style="props.row.child ? styleObject : ''">
+                <el-tooltip class="item" effect="dark" :content="props.row.name" placement="top-start">
+                  <span>{{ props.row.name }}</span>
+                </el-tooltip>
+              </div>
+              <div class="group-operation" v-show="!props.row.child">
+                <span class="el-icon-edit" @click="editGroup(props.row.id)"></span>
+                <el-popover
+                  v-model="props.row.isDelete"
+                  placement="top"
+                  width="160"
+                  trigger="click">
+                  <div class="delete-personal">
+                    <el-button @click="deleteGroup(props.row.id, props.row)" size="small" type="primary">删除</el-button>
+                    <el-button @click="props.row.isDelete = false" size="small" type="info" plain>取消</el-button>
+                  </div>
+                  <span slot="reference" class="el-icon-delete"></span>
+                </el-popover>
+              </div>
+            </div> -->
+
+            <el-table
+              :data="tabelChildren"
+              :show-header="false"
+              style="width: 100%">
+              <el-table-column
+                prop="name"
+                label="账号"
+                align="right"
+                width="273">
+              </el-table-column>
+              <el-table-column
+                prop="date"
+                label="备注">
+              </el-table-column>
+              <el-table-column
+                width="180"
+                label="操作">
+                <template slot-scope="props">
+                  <div class="group-operation">
+                    <span class="el-icon-edit" @click="editGroup(props.row.id)"></span>
+                    <el-popover
+                      v-model="props.row.isDelete"
+                      placement="top"
+                      width="160"
+                      trigger="click">
+                      <div class="delete-personal">
+                        <el-button @click="deleteGroup(props.row.id, props.row)" size="small" type="primary">删除</el-button>
+                        <el-button @click="props.row.isDelete = false" size="small" type="info" plain>取消</el-button>
+                      </div>
+                      <span slot="reference" class="el-icon-delete"></span>
+                    </el-popover>
+                  </div>
+                </template>
+              </el-table-column>
+            </el-table>
+            <!-- <div>账号列表{{props.row.name}}</div> -->
+          </template>
+        </el-table-column>
         <el-table-column
           type="selection"
           width="55">
@@ -36,58 +96,32 @@
           prop="name"
           label="组名/账号"
           width="220">
-          <template slot-scope="scope">
-            <div class="groupName clearfix" :class="[scope.row.child? 'groupName-no' : '']">
-              <div class="name" :style="scope.row.child ? styleObject : ''">
-                <el-tooltip class="item" effect="dark" :content="scope.row.name" placement="top-start">
-                  <span>{{ scope.row.name }}</span>
-                </el-tooltip>
-              </div>
-              <div class="group-operation" v-show="!scope.row.child">
-                <span class="el-icon-edit" @click="editGroup(scope.row.id)"></span>
-                <el-popover
-                  v-model="scope.row.isDelete"
-                  placement="top"
-                  width="160"
-                  trigger="click">
-                  <div class="delete-personal">
-                    <el-button @click="deleteGroup(scope.row.id, scope.row)" size="small" type="primary">删除</el-button>
-                    <el-button @click="scope.row.isDelete = false" size="small" type="info" plain>取消</el-button>
-                  </div>
-                  <span slot="reference" class="el-icon-delete"></span>
-                </el-popover>
-              </div>
-            </div>
-          </template>
         </el-table-column>
         <el-table-column
           prop="date"
           label="备注">
+          <template slot-scope="props">
+            <div class="group-operation">
+              <span class="el-icon-edit" @click="editGroup(props.row.id)"></span>
+              <el-popover
+                v-model="props.row.isDelete"
+                placement="top"
+                width="160"
+                trigger="click">
+                <div class="delete-personal">
+                  <el-button @click="deleteGroup(props.row.id, props.row)" size="small" type="primary">删除</el-button>
+                  <el-button @click="props.row.isDelete = false" size="small" type="info" plain>取消</el-button>
+                </div>
+                <span slot="reference" class="el-icon-delete"></span>
+              </el-popover>
+            </div>
+          </template>
         </el-table-column>
         <el-table-column
           prop="operation"
           width="180"
           align="left"
           label="操作">
-          <template slot-scope="scope">
-            <div class="operation clearfix" v-show="scope.row.child">
-              <span @click="editAccount(scope.row.id)">修改</span>
-              <span></span>
-              <el-popover
-                v-model="scope.row.isPop"
-                placement="top"
-                width="160"
-                trigger="click">
-                <div class="delete-personal">
-                  <el-button @click="deletePersonal(scope.row.id, scope.row)" size="small" type="primary">删除</el-button>
-                  <el-button @click="scope.row.isPop = false" size="small" type="info" plain>取消</el-button>
-                </div>
-                <span slot="reference">删除</span>
-              </el-popover>
-              <span></span>
-              <span @click="distributionDialogVisible = true">更换分组</span>
-            </div>
-          </template>
         </el-table-column>
       </el-table>
     </div>
@@ -252,20 +286,7 @@ export default {
         date: '',
         name: '分组二',
         operation: '',
-        isDelete: false,
-        children: [{
-            id: 31,
-            date: '2016-05-01',
-            name: '王小虎',
-            operation: '',
-            child: true
-          }, {
-            id: 32,
-            date: '2016-05-01',
-            name: '王小虎',
-            operation: '',
-            child: true
-        }]
+        isDelete: false
       }, {
         id: 4,
         date: '',
@@ -273,6 +294,24 @@ export default {
         operation: '',
         isDelete: false
       }],
+      tabelChildren: [{
+          id: 31,
+          date: '2016-05-01',
+          name: '王小虎',
+          operation: '',
+          child: true,
+          isDelete: false,
+          isPop: false
+        }, {
+          id: 32,
+          date: '2016-05-01',
+          name: '王小虎',
+          operation: '',
+          child: true,
+          isDelete: false,
+          isPop: false
+      }],
+
       selectAll: false, // 下边全选按钮
       page: {
         page: 5
@@ -428,6 +467,13 @@ export default {
   /deep/ .el-table__indent, /deep/ .el-table__placeholder
     display none   
 
+/deep/ .el-table__expanded-cell
+  padding 0 0 0 50px
+  /deep/ .el-table td
+    border-bottom 0
+  /deep/ .el-table::before
+    height 0 
+
 .groupName
   float left
   width calc(100% - 23px)
@@ -438,17 +484,17 @@ export default {
     overflow hidden
     text-overflow ellipsis
     white-space nowrap
-  > .group-operation
-    width 48px
-    margin-left 14px
-    > span
-      font-size 14px
-      cursor pointer
-      font-weight 500
-    > span:first-child
-      margin-right 10px
-    > span:hover
-      color #409EFF
+
+.group-operation
+  width 48px
+  > span
+    font-size 14px
+    cursor pointer
+    font-weight 500
+  > span:first-child
+    margin-right 10px
+  > span:hover
+    color #409EFF
 
 .groupName-no
   width 100%
