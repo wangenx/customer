@@ -28,7 +28,7 @@
             <el-button size="small" type="primary" @click="getList()">查询</el-button>
           </div>
           <div class="right">
-            <el-select v-model="searchData.groupId" size="small" placeholder="请选择">
+            <el-select v-model="searchData.groupId" size="small" placeholder="请选择分组">
               <el-option
                 v-for="item in accountQuery"
                 :key="item.groupId"
@@ -36,7 +36,7 @@
                 :value="item.groupId">
               </el-option>
             </el-select>
-            <el-select v-model="searchData.taskId" size="small" placeholder="请选择">
+            <el-select v-model="searchData.taskId" size="small" placeholder="请选择任务">
               <el-option
                 v-for="item in taskList"
                 :key="item.taskId"

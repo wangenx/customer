@@ -43,6 +43,41 @@ const postTaskCreate = (data) => {
   return request.get('/analog-data/task-create.json', data)
 }
 
+// 新分组建
+const postCroupCreate = (data) => {
+  return request.get('/analog-data/group-create.json', data)
+}
+
+// 编辑分组
+const postCroupEdit = (data) => {
+  return request.get('/analog-data/group-edit.json', data)
+}
+
+// 删除分组
+const postCroupDelete = (data) => {
+  return request.get('/analog-data/group-delete.json', data)
+}
+
+// 新建账号
+const postAccountCreate = (data) => {
+  return request.get('/analog-data/account-create.json', data)
+}
+
+// 编辑账号
+const postAccountEdit = (data) => {
+  return request.get('/analog-data/account-edit.json', data)
+}
+
+// 查询账号列表
+const postAccountList = (data) => {
+  return request.get('/analog-data/account-list.json', data)
+}
+
+// 查询账号列表
+const postAccountDelete = (data) => {
+  return request.get('/analog-data/account-delete.json', data)
+}
+
 export {
   login,
   dispatchList,
@@ -52,5 +87,12 @@ export {
   postAccountQuery,
   postTaskQuery,
   postTaskExpiration,
-  postTaskCreate
+  postTaskCreate,
+  postCroupCreate,
+  postCroupEdit,
+  postCroupDelete,
+  postAccountCreate,
+  postAccountEdit,
+  postAccountList,
+  postAccountDelete
 }

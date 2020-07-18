@@ -5,15 +5,15 @@
     </div>
     <div class="account-head clearfix">
       <div class="search">
-        <el-select v-model="form.grouping" size="small" placeholder="人员分组">
+        <el-select v-model="form.groupId" size="small" placeholder="人员分组">
           <el-option
-            v-for="item in options"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value">
+            v-for="item in groupArr"
+            :key="item.groupId"
+            :label="item.groupName"
+            :value="item.groupId">
           </el-option>
         </el-select>
-        <el-input v-model="form.input" size="small" placeholder="请输入内容"></el-input>
+        <el-input v-model="form.key" size="small" placeholder="请输入分组名"></el-input>
         <el-button size="small" type="primary">查询</el-button>
       </div>
       <div class="operation">
@@ -24,62 +24,67 @@
     <div class="tabel">
       <el-table
         :data="tableData"
+        ref="multipleTable"
+        @expand-change="expandChange"
         style="width: 100%;margin-bottom: 20px;"
         @selection-change="handleSelectionChange">
         <el-table-column type="expand">
-          <template>
-            <!-- <div class="groupName clearfix" :class="[props.row.child? 'groupName-no' : '']">
-              <div class="groupName" :style="props.row.child ? styleObject : ''">
-                <el-tooltip class="item" effect="dark" :content="props.row.name" placement="top-start">
-                  <span>{{ props.row.name }}</span>
-                </el-tooltip>
-              </div>
-              <div class="group-operation" v-show="!props.row.child">
-                <span class="el-icon-edit" @click="editGroup(props.row.id)"></span>
-                <el-popover
-                  v-model="props.row.isDelete"
-                  placement="top"
-                  width="160"
-                  trigger="click">
-                  <div class="delete-personal">
-                    <el-button @click="deleteGroup(props.row.id, props.row)" size="small" type="primary">删除</el-button>
-                    <el-button @click="props.row.isDelete = false" size="small" type="info" plain>取消</el-button>
-                  </div>
-                  <span slot="reference" class="el-icon-delete"></span>
-                </el-popover>
-              </div>
-            </div> -->
-
+          <template slot-scope="scope">
             <el-table
-              :data="tabelChildren"
+              :data="scope.row.children"
               :show-header="false"
+              max-height="240"
               style="width: 100%">
               <el-table-column
-                prop="name"
+                prop="accountName"
                 label="账号"
                 align="right"
                 width="273">
+                <template slot-scope="scope">
+                  <span @click="accountRowClick(scope.row)" :class="[scope.row.isClick ? 'account-click' : 'account-noclick']">{{ scope.row.accountName }}</span>
+                </template>
               </el-table-column>
               <el-table-column
-                prop="date"
+                prop="staffId"
+                label="员工ID"
+                align="right"
+                width="100">
+                <template slot-scope="scope">
+                  <span @click="accountRowClick(scope.row)" :class="[scope.row.isClick ? 'account-click' : 'account-noclick']">{{ scope.row.staffId }}</span>
+                </template>
+              </el-table-column>
+              <el-table-column
+                prop="realName"
+                label="真实姓名"
+                align="right"
+                width="100">
+                <template slot-scope="scope">
+                  <span @click="accountRowClick(scope.row)" :class="[scope.row.isClick ? 'account-click' : 'account-noclick']">{{ scope.row.realName }}</span>
+                </template>
+              </el-table-column>
+              <el-table-column
+                prop="remarks"
                 label="备注">
+                <template slot-scope="scope">
+                  <span @click="accountRowClick(scope.row)" :class="[scope.row.isClick ? 'account-click' : 'account-noclick']">{{ scope.row.remarks }}</span>
+                </template>
               </el-table-column>
               <el-table-column
                 width="180"
                 label="操作">
                 <template slot-scope="props">
                   <div class="group-operation">
-                    <span class="el-icon-edit" @click="editGroup(props.row.id)"></span>
+                    <span class="el-icon-edit" title="编辑账号" @click="editAccount(props.row, scope.row.groupId)"></span>
                     <el-popover
                       v-model="props.row.isDelete"
                       placement="top"
                       width="160"
                       trigger="click">
                       <div class="delete-personal">
-                        <el-button @click="deleteGroup(props.row.id, props.row)" size="small" type="primary">删除</el-button>
-                        <el-button @click="props.row.isDelete = false" size="small" type="info" plain>取消</el-button>
+                        <el-button @click="deleteAccount(props.row, scope.row)" size="small" type="primary">删除</el-button>
+                        <el-button @click="props.row.isPop = false" size="small" type="info" plain>取消</el-button>
                       </div>
-                      <span slot="reference" class="el-icon-delete"></span>
+                      <span slot="reference" title="删除账号" class="el-icon-delete"></span>
                     </el-popover>
                   </div>
                 </template>
@@ -93,52 +98,52 @@
           width="55">
         </el-table-column>
         <el-table-column
-          prop="name"
+          prop="groupName"
           label="组名/账号"
           width="220">
         </el-table-column>
         <el-table-column
-          prop="date"
+          prop="remarks"
           label="备注">
-          <template slot-scope="props">
-            <div class="group-operation">
-              <span class="el-icon-edit" @click="editGroup(props.row.id)"></span>
-              <el-popover
-                v-model="props.row.isDelete"
-                placement="top"
-                width="160"
-                trigger="click">
-                <div class="delete-personal">
-                  <el-button @click="deleteGroup(props.row.id, props.row)" size="small" type="primary">删除</el-button>
-                  <el-button @click="props.row.isDelete = false" size="small" type="info" plain>取消</el-button>
-                </div>
-                <span slot="reference" class="el-icon-delete"></span>
-              </el-popover>
-            </div>
-          </template>
         </el-table-column>
         <el-table-column
           prop="operation"
           width="180"
           align="left"
           label="操作">
+          <template slot-scope="props">
+            <div class="group-operation">
+              <span class="el-icon-edit" title="编辑分组" @click="editGroup(props.row)"></span>
+              <el-popover
+                v-model="props.row.isDelete"
+                placement="top"
+                width="160"
+                trigger="click">
+                <div class="delete-personal">
+                  <el-button @click="deleteGroup(props.row.groupId, props.row)" size="small" type="primary">删除</el-button>
+                  <el-button @click="props.row.isDelete = false" size="small" type="info" plain>取消</el-button>
+                </div>
+                <span slot="reference" title="删除分组" class="el-icon-delete"></span>
+              </el-popover>
+            </div>
+          </template>
         </el-table-column>
       </el-table>
     </div>
     <div class="page">
       <div class="select-all">
-        <el-checkbox size="small" v-model="selectAll" label="全选" border></el-checkbox>
-        <el-button size="small" @click="deleteDialogVisible = true">删除</el-button>
+        <el-checkbox size="small" v-model="selectAll" @change="handleSelectionChangeCheckbox" label="全选" border></el-checkbox>
+        <el-button size="small" @click="deleteAllGroup">删除分组</el-button>
+        <el-button size="small" @click="deleteAllAccount">删除账号</el-button>
       </div>
       <el-pagination
         background
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
-        :current-page="page.page"
-        :page-sizes="[100, 200, 300, 400]"
-        :page-size="100"
+        :current-page="pagination.page"
+        :page-size="pagination.pageSize"
         layout="prev, pager, next, sizes, jumper"
-        :total="400">
+        :total="pagination.total">
       </el-pagination>
     </div>
     <div class="dialog">
@@ -149,22 +154,32 @@
         :before-close="handleClose">
         <div class="dialog-line"></div>
         <el-form :model="ruleForm" :rules="rules" size="small" ref="ruleForm" label-width="100px" label-position="top" class="demo-ruleForm">
-          <el-form-item label="账号名" prop="name">
-            <el-input v-model="ruleForm.name" placeholder="请输入账号名"></el-input>
+          <el-form-item label="账号名" prop="userName">
+            <el-input :disabled="this.ruleFormTitle === '编辑账号'" v-model="ruleForm.userName" placeholder="请输入账号名"></el-input>
+          </el-form-item>
+          <el-form-item label="员工ID" prop="staffId">
+            <el-input v-model="ruleForm.staffId" placeholder="请输入员工ID"></el-input>
+          </el-form-item>
+          <el-form-item label="员工姓名" prop="realName">
+            <el-input v-model="ruleForm.realName" placeholder="请输入员工姓名"></el-input>
           </el-form-item>
           <el-form-item label="备注" prop="remarks">
             <el-input v-model="ruleForm.remarks" placeholder="请输入备注"></el-input>
           </el-form-item>
-          <el-form-item label="选择组" prop="region">
-            <el-select v-model="ruleForm.region" placeholder="请选择">
-              <el-option label="分组一" value="shanghai"></el-option>
-              <el-option label="分组二" value="beijing"></el-option>
+          <el-form-item label="选择组" prop="groupId">
+            <el-select v-model="ruleForm.groupId" placeholder="请选择">
+              <el-option
+                v-for="item in groupArr"
+                :key="item.groupId"
+                :label="item.groupName"
+                :value="item.groupId">
+              </el-option>
             </el-select>
           </el-form-item>
         </el-form>
         <span slot="footer" class="dialog-footer">
           <el-button size="small" @click="newAccountDialogVisible = false">取消</el-button>
-          <el-button size="small" type="primary" @click="newAccountDialogVisible = false">添加</el-button>
+          <el-button size="small" type="primary" @click="newAccount('ruleForm')">添加</el-button>
         </span>
       </el-dialog>
       <el-dialog
@@ -174,22 +189,16 @@
         :before-close="handleCloseGrouping">
         <div class="dialog-line"></div>
         <el-form :model="ruleFormGrouping" :rules="rulesGrouping" size="small" ref="ruleFormGrouping" label-width="100px" label-position="top" class="demo-ruleForm">
-          <el-form-item label="分组名称" prop="name">
-            <el-input v-model="ruleFormGrouping.name" placeholder="请输入分组名称"></el-input>
+          <el-form-item label="分组名称" prop="groupName">
+            <el-input v-model="ruleFormGrouping.groupName" placeholder="请输入分组名称"></el-input>
           </el-form-item>
           <el-form-item label="备注" prop="remarks">
-            <el-input v-model="ruleFormGrouping.remarks" placeholder="请输入分组名称"></el-input>
-          </el-form-item>
-          <el-form-item label="选择组" prop="region">
-            <el-select v-model="ruleFormGrouping.region" placeholder="请选择">
-              <el-option label="分组一" value="shanghai"></el-option>
-              <el-option label="分组二" value="beijing"></el-option>
-            </el-select>
+            <el-input v-model="ruleFormGrouping.remarks" placeholder="请输入备注"></el-input>
           </el-form-item>
         </el-form>
         <span slot="footer" class="dialog-footer">
           <el-button size="small" @click="newGroupingDialogVisible = false">取消</el-button>
-          <el-button size="small" type="primary" @click="newGroupingDialogVisible = false">添加</el-button>
+          <el-button size="small" type="primary" @click="newGroup('ruleFormGrouping')">添加</el-button>
         </span>
       </el-dialog>
       <el-dialog
@@ -201,8 +210,12 @@
         <el-form :model="distributionRuleForm" :rules="distributionRules" size="small" ref="distributionRuleForm" label-width="100px" label-position="top" class="demo-ruleForm">
           <el-form-item label="选择组" prop="region">
             <el-select v-model="distributionRuleForm.region" placeholder="请选择">
-              <el-option label="分组一" value="shanghai"></el-option>
-              <el-option label="分组二" value="beijing"></el-option>
+              <el-option
+                v-for="item in groupArr"
+                :key="item.groupId"
+                :label="item.groupName"
+                :value="item.groupId">
+              </el-option>
             </el-select>
           </el-form-item>
         </el-form>
@@ -220,7 +233,19 @@
         <span>是否删除选中分组？</span>
         <span slot="footer" class="dialog-footer">
           <el-button size="small" @click="deleteDialogVisible = false">取消</el-button>
-          <el-button size="small" type="primary" @click="deleteDialogVisible = false">确认</el-button>
+          <el-button size="small" type="primary" @click="deleteGroupAll">确认</el-button>
+        </span>
+      </el-dialog>
+      <el-dialog
+        title="删除"
+        :visible.sync="deleteAccountDialogVisible"
+        width="480px"
+        :before-close="handleClosDeleteAccount">
+        <div class="dialog-line"></div>
+        <span>是否删除选中选中账号？</span>
+        <span slot="footer" class="dialog-footer">
+          <el-button size="small" @click="deleteAccountDialogVisible = false">取消</el-button>
+          <el-button size="small" type="primary" @click="deleteAccountAll">确认</el-button>
         </span>
       </el-dialog>
     </div>
@@ -228,126 +253,70 @@
 </template>
 
 <script>
+import { postCroupCreate, postAccountQuery, postCroupEdit, postCroupDelete, postAccountCreate, postAccountEdit, postAccountList, postAccountDelete } from '@/api/api'
 export default {
   data () {
     return {
       styleObject: {
         textAlign: 'right'
       },
-      options: [{
-        value: '选项1',
-        label: '黄金糕'
-      }, {
-        value: '选项2',
-        label: '双皮奶'
-      }, {
-        value: '选项3',
-        label: '蚵仔煎'
-      }, {
-        value: '选项4',
-        label: '龙须面'
-      }, {
-        value: '选项5',
-        label: '北京烤鸭'
-      }],
       form: {
-        grouping: '',
-        input: ''
+        groupId: '',
+        key: ''
       },
-      tableData: [{
-        id: 1,
-        date: '',
-        name: '未分组',
-        operation: '',
-        isDelete: false
-      }, {
-        id: 2,
-        date: '',
-        name: '分组一',
-        operation: '',
-        isDelete: false,
-        children: [{
-            id: 29,
-            date: '2016-05-01',
-            name: '账号名',
-            operation: '',
-            child: true,
-            isPop: false
-          }, {
-            id: 30,
-            date: '2016-05-01',
-            name: '王小虎',
-            operation: '',
-            child: true,
-            isPop: false
-        }]
-      }, {
-        id: 3,
-        date: '',
-        name: '分组二',
-        operation: '',
-        isDelete: false
-      }, {
-        id: 4,
-        date: '',
-        name: '分组三',
-        operation: '',
-        isDelete: false
-      }],
-      tabelChildren: [{
-          id: 31,
-          date: '2016-05-01',
-          name: '王小虎',
-          operation: '',
-          child: true,
-          isDelete: false,
-          isPop: false
-        }, {
-          id: 32,
-          date: '2016-05-01',
-          name: '王小虎',
-          operation: '',
-          child: true,
-          isDelete: false,
-          isPop: false
-      }],
-
+      tableData: [],
       selectAll: false, // 下边全选按钮
-      page: {
-        page: 5
+      pagination: {
+        page: 1,
+        pageSize: 10,
+        total: 0
       },
       newAccountDialogVisible: false, // 账号开关
       newGroupingDialogVisible: false, // 新建分组dialog开关
       distributionDialogVisible: false, // 分配组dialog开关
       deleteDialogVisible: false, // 删除弹窗
+      deleteAccountDialogVisible: false, // 删除账号弹窗
       ruleForm: {
-        name: '',
+        userName: '',
+        staffId: '',
         remarks: '',
-        region: ''
+        groupId: '',
+        realName: '',
+        accountId: ''
       },
+      groupArr: [], // 下拉框分组列表
       ruleFormTitle: '新建账号',
       ruleFormGrouping: {
-        name: '',
-        remarks: '',
-        region: ''
+        groupId: '',
+        groupName: '',
+        remarks: ''
       },
+      editGrousData: {},
       ruleFormGroupingTitle: '新建分组',
       distributionRuleForm: {
         region: ''
       },
+      deleteArrGroup: [],
+      deleteArrAccount: [],
       rules: {
-        name: [
+        userName: [
            { required: true, message: '请输入账号名', trigger: 'blur' }
+        ],
+        staffId: [
+           { required: true, message: '请输入员工ID', trigger: 'blur' }
+        ],
+        realName: [
+           { required: true, message: '请输入员工姓名', trigger: 'blur' }
         ],
         remarks: [
            { required: true, message: '请输入备注', trigger: 'blur' }
         ],
-        region: [
-           { required: true, message: '请选择组', trigger: 'change' }
+        groupId: [
+           { required: true, message: '请选择分组', trigger: 'change' }
         ]
       },
       rulesGrouping: {
-        name: [
+        groupName: [
            { required: true, message: '请输入分组名', trigger: 'blur' }
         ],
         remarks: [
@@ -364,27 +333,142 @@ export default {
       }
     }
   },
+  created () {
+    this.getGroupList()
+    postAccountQuery().then(res => {
+      if (res.code === 0) {
+        this.groupArr = res.data.groups
+      }
+    })
+  },
   methods: {
+    // 点击账号每一行
+    accountRowClick (row) {
+      row.isClick = true
+      if (this.deleteArrAccount.indexOf(row) > -1) {
+        row.isClick = false
+        this.deleteArrAccount.splice(this.deleteArrAccount.indexOf(row), 1)
+      } else (
+        this.deleteArrAccount.push(row)
+      )
+    },
+    deleteAllAccount () {
+      this.deleteArrAccount.length > 0 ? this.deleteAccountDialogVisible = true : this.$message.error('请选择账号')
+    },
+    // 查询分组列表
+    getGroupList () {
+      const params = {
+        groupId: this.form.groupId,
+        key: this.form.key,
+        pageNo: this.pagination.page,
+        pageSize: this.pagination.pageSize
+      }
+      postAccountQuery(params).then(res => {
+        if (res.code === 0) {
+          res.data.groups.forEach(e => {
+            e.isDelete = false
+            e.children = []
+          })
+          this.tableData = res.data.groups
+          this.pagination.total = Number(res.data.totalCount)
+        }
+      })
+    },
+    // 点击每一行获取分组下边的账号
+    expandChange (row, expandedRows) {
+      if (expandedRows.length > 0) {
+        this.getGroupAccountList(row)
+      }
+    },
+    // 获取分组下边账号
+    getGroupAccountList (row) {
+      postAccountList({ groupId: row.groupId }).then(res => {
+        if (res.code === 0) {
+          res.data.accounts.forEach(e => {
+            e.isPop = false
+            e.isClick = false
+          })
+          row.children = res.data.accounts
+        }
+      })
+    },
+    deleteAccountAll () {
+      const params = this.deleteArrAccount.map(e => {
+        return e.accountId
+      })
+      postAccountDelete(params).then(res => {
+        if (res.code === 0) {
+          this.$message.success('删除账号成功')
+          this.getGroupList()
+          this.deleteAccountDialogVisible = false
+        }
+      })
+    },
+    // 全选分组
     handleSelectionChange(val) {
-      console.log(val)
-      this.multipleSelection = val
+      this.deleteArrGroup = val
+    },
+    handleSelectionChangeCheckbox () {
+      if (this.selectAll) {
+        this.tableData.forEach(row => {
+          this.$refs.multipleTable.toggleRowSelection(row)
+        })
+        this.deleteArrGroup = this.tableData
+      } else {
+        this.$refs.multipleTable.clearSelection();
+        this.deleteArrGroup = []
+      }
+    },
+    // 多选删除分组
+    deleteAllGroup () {
+      if (this.deleteArrGroup.length > 0) {
+        this.deleteDialogVisible = true
+      } else {
+        this.$message.error('请选择分组')
+      }
+    },
+    deleteGroupAll () {
+      const params = this.deleteArrGroup.map(e => {
+        return e.groupId
+      })
+      postCroupDelete(params).then(res => {
+        if (res.code === 0) {
+          this.$message.success('删除分组成功')
+          this.getGroupList()
+          this.deleteDialogVisible = false
+          this.deleteArrGroup = []
+        }
+      })
     },
     // 删除账号
-    deletePersonal (id, row) {
-      console.log(id)
-      row.isPop = false
+    deleteAccount (row, groupRow) {
+      postAccountDelete({ accountId: [row.accountId] }).then(res => {
+        if (res.code === 0) {
+          this.$message.success('删除账号成功')
+          row.isPop = false
+          this.getGroupAccountList(groupRow)
+        }
+      })
     },
     // 删除分组
     deleteGroup (id, row) {
-      console.log(id)
-      row.isDelete = false
+      const params = [id]
+      postCroupDelete(params).then(res => {
+        if (res.code === 0) {
+          this.$message.success('删除分组成功')
+          this.getGroupList()
+          row.isDelete = false
+        }
+      })
     },
     // 分页
     handleSizeChange(val) {
-      console.log(`每页 ${val} 条`);
+      this.pagination.pageSize = val
+      this.getGroupList()
     },
     handleCurrentChange(val) {
-      console.log(`当前页: ${val}`);
+      this.pagination.page = val
+      this.getGroupList()
     },
     // 关闭新建账号弹窗
     handleClose () {
@@ -399,25 +483,126 @@ export default {
     handleClosDelete () {
       this.deleteDialogVisible = false
     },
+    handleClosDeleteAccount () {
+      this.deleteAccountDialogVisible = false
+    },
     // 编辑分组
-    editGroup () {
+    editGroup (row) {
+      this.ruleFormGrouping.groupId = row.groupId
+      this.ruleFormGrouping.groupName = row.groupName
+      this.ruleFormGrouping.remarks = row.remarks
       this.ruleFormGroupingTitle = '编辑分组'
       this.newGroupingDialogVisible = true
     },
     // 添加分组
     addGroup () {
+      this.ruleFormGrouping.groupId = ''
+      this.ruleFormGrouping.groupName = ''
+      this.ruleFormGrouping.remarks = ''
       this.ruleFormGroupingTitle = '新建分组'
       this.newGroupingDialogVisible = true
     },
+    newGroup (formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          if (this.ruleFormGroupingTitle === '编辑分组') {
+            const params = {
+              groupId: this.ruleFormGrouping.groupId,
+              groupName: this.ruleFormGrouping.groupName,
+              remarks: this.ruleFormGrouping.remarks
+            }
+            postCroupEdit(params).then(res => {
+              if (res.code === 0) {
+                this.$message.success('编辑分组成功')
+                this.getGroupList()
+                this.newGroupingDialogVisible = false
+                this.$refs[formName].resetFields()
+              }
+            })
+          } else if (this.ruleFormGroupingTitle === '新建分组') {
+            const params ={
+              groupName: this.ruleFormGrouping.groupName,
+              remarks: this.ruleFormGrouping.remarks
+            }
+            postCroupCreate(params).then(res => {
+              if (res.code === 0) {
+                this.$message.success('新建分组成功')
+                this.getGroupList()
+                this.newGroupingDialogVisible = false
+                this.$refs[formName].resetFields()
+              }
+            })
+          }
+          
+        } else {
+          console.log('error submit!!')
+          return false;
+        }
+      })
+    },
     // 编辑账号
-    editAccount () {
+    editAccount (row, groupId) {
+      console.log(row)
+      this.ruleForm.accountId = row.accountId
+      this.ruleForm.userName = row.accountName
+      this.ruleForm.staffId = row.staffId
+      this.ruleForm.remarks = row.remarks
+      this.ruleForm.groupId = groupId
+      this.ruleForm.realName = row.realName
       this.ruleFormTitle = '编辑账号'
       this.newAccountDialogVisible = true
     },
     // 新建账号
     addAccount () {
-      this.ruleFormTitle = '新建账号'
-      this.newAccountDialogVisible = true
+      this.ruleForm.accountId = ''
+      this.ruleForm.userName = ''
+      this.ruleForm.staffId = ''
+      this.ruleForm.remarks = ''
+      this.ruleForm.groupId = ''
+      this.ruleForm.realName = ''
+      this.ruleForm.ruleFormTitle = '新建账号'
+      this.ruleForm.newAccountDialogVisible = true
+    },
+    // 新建、编辑账号提交
+    newAccount (formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          if (this.ruleFormTitle === '新建账号') {
+            const params = {
+              userName: this.ruleForm.userName,
+              staffId: this.ruleForm.staffId,
+              remarks: this.ruleForm.staffId,
+              groupId: this.ruleForm.groupId,
+              realName: this.ruleForm.realName
+            }
+            postAccountCreate(params).then(res => {
+              if (res.code === 0) {
+                this.$message.success('新建账号成功')
+                this.getGroupList()
+                this.newAccountDialogVisible = false
+              }
+            })
+          } else if (this.ruleFormTitle === '编辑账号') {
+            const params = {
+              accountId: this.ruleForm.accountId,
+              staffId: this.ruleForm.staffId,
+              remarks: this.ruleForm.staffId,
+              groupId: this.ruleForm.groupId,
+              realName: this.ruleForm.realName
+            }
+            postAccountEdit(params).then(res => {
+              if (res.code === 0) {
+                this.$message.success('编辑账号成功')
+                this.getGroupList()
+                this.newAccountDialogVisible = false
+              }
+            })
+          }
+        } else {
+          console.log('error submit!!')
+          return false
+        }
+      })
     }
   }
 }
@@ -469,10 +654,20 @@ export default {
 
 /deep/ .el-table__expanded-cell
   padding 0 0 0 50px
+  overflow-y auto
   /deep/ .el-table td
     border-bottom 0
   /deep/ .el-table::before
     height 0 
+  /deep/ .el-table--enable-row-hover .el-table__body tr:hover > td
+    background-color #fff
+
+.account-noclick
+  cursor pointer
+
+.account-click
+  color #1989FA
+  cursor pointer
 
 .groupName
   float left
