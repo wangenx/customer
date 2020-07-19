@@ -1,0 +1,40 @@
+{
+    "code": 0,   
+    "message": "成功",
+     "data": {
+     	"customs":[
+             {
+                 "customId": 1,
+                 "customPhone": 18810001001,
+                 "customName": "李四",
+                 "level": "最高级",
+                 "industry": "电子商务",
+                 "companyName": "啦啦啦",
+                 "customPost": "销售岗",
+                 "customTag": ["潜在客户"],
+                 "chargeMan": "阿三",
+                 "followStatus": "",
+                 "chargeManId": 1,
+                 "createTime": "2020-07-18"
+             },
+             {
+                "customId": 2,
+                "customPhone": 18810001000,
+                "customName": "张三",
+                "level": "中级",
+                "industry": "一级",
+                "companyName": "啦啦啦",
+                "customPost": "销售岗",
+                "customTag": ["非常优秀"],
+                "chargeMan": "阿三",
+                "followStatus": "",
+                "chargeManId": 2,
+                "createTime": "2020-07-18"
+            }
+         ],
+	 	"pageNo":"1",
+	 	"pageSize":"10",
+	 	"totalPage":"10",
+	 	"totalCount":"99"
+}   
+  }

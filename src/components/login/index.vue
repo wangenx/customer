@@ -65,6 +65,25 @@ export default {
         callback();
       }
     }
+    var validateUsername = (rule, value, callback) => {
+      const reg = /^[1][3,4,5,7,8,9][0-9]{9}$/
+      if (value === '') {
+        callback(new Error('请输入手机号'))
+      } else if (!reg.test(value)) {
+        callback(new Error('请输入正确手机号'))
+      } else {
+        callback()
+      }
+    }
+    var validateCode = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('请输入验证码'))
+      } else if (value.length < 6) {
+        callback(new Error('请输入六位数验证码'))
+      } else {
+        callback()
+      }
+    }
     return {
       isSend: false,
       loginFuleForm: {
@@ -87,20 +106,20 @@ export default {
       },
       rules: {
         userName: [
-          { required: true, message: '请输入手机号', trigger: 'blur' }
+          { validator: validateUsername, trigger: 'blur' }
         ],
         newPassword: [
           { required: true, message: '请输入新密码', trigger: 'blur' },
         ],
         code: [
-          { required: true, message: '请输入验证码', trigger: 'blur' }
+          { validator: validateCode, trigger: 'blur' }
         ],
         passwordAgin: [
           { validator: validatePass2, trigger: 'blur'}
         ]
       },
       isLogin: true,
-      num: 5,
+      num: 60,
       interval: null
     }
   },

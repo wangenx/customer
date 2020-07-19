@@ -5,20 +5,20 @@
     </div>
     <div class="cusmoter-head clearfix">
       <div class="search">
-        <el-input v-model="cusmoterInput" size="small" placeholder="请输入内容"></el-input>
-        <el-button size="small" type="primary">查询</el-button>
-        <el-select v-model="grouping" size="small" placeholder="筛选分组">
+        <el-input v-model="key" size="small" placeholder="请输入内容"></el-input>
+        <el-button size="small" type="primary" @click="search">查询</el-button>
+        <el-select v-model="groupId" filterable size="small" placeholder="筛选分组">
           <el-option
-            v-for="item in options"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value">
+            v-for="item in groupArr"
+            :key="item.groupId"
+            :label="item.groupName"
+            :value="item.groupId">
           </el-option>
         </el-select>
       </div>
       <div class="operation">
         <el-button size="small" type="primary" @click="addCusmoter"><i class="el-icon-plus"></i>新建客户</el-button>
-        <el-button size="small" type="primary"><i class="el-icon-refresh"></i></el-button>
+        <el-button size="small" type="primary" @click="search"><i class="el-icon-refresh"></i></el-button>
       </div>
     </div>
     <div class="tabel">
@@ -35,48 +35,48 @@
         <el-table-column
           prop="classification"
           label="客户分级">
-          <template slot-scope="scope">{{ scope.row.classification }}</template>
+          <template slot-scope="scope">{{ scope.row.level }}</template>
         </el-table-column>
         <el-table-column
-          prop="tel"
+          prop="phone"
           label="手机号"
           show-overflow-tooltip>
         </el-table-column>
         <el-table-column
-          prop="condition"
+          prop="industry"
           label="所属行业"
           show-overflow-tooltip>
         </el-table-column>
         <el-table-column
-          prop="name"
+          prop="customName"
           label="客户姓名"
           show-overflow-tooltip>
         </el-table-column>
         <el-table-column
-          prop="distributor"
+          prop="companyName"
           label="公司名称"
           show-overflow-tooltip>
         </el-table-column>
         <el-table-column
-          prop="distributor"
+          prop="customPost"
           label="客户职位"
           show-overflow-tooltip>
         </el-table-column>
         <el-table-column
-          prop="distributor"
+          prop="customTag"
           label="客户标签"
-          min-width="258"
-          show-overflow-tooltip>
-          <template>
-            <div class="tag">
-              <el-tag size="small" type="info">潜在客户</el-tag>
-              <el-tag size="small" type="info">战略投资</el-tag>
-              <el-tag size="small" type="info">B轮融资</el-tag>
-            </div>
+          min-width="258">
+          <template slot-scope="scope">
+            <!-- <span class="tag">
+              
+            </span> -->
+            <span class="tag">
+              <el-tag size="small" type="info" v-for="(item, index) in scope.row.customTag" :key="index">{{ item }}</el-tag>
+            </span>
           </template>
         </el-table-column>
         <el-table-column
-          prop="people"
+          prop="chargeMan"
           label="所属人"
           show-overflow-tooltip>
         </el-table-column>
@@ -85,9 +85,9 @@
           width="220">
           <template slot-scope="scope">
             <div class="operation clearfix">
-              <span @click="distributionDialogVisible = true">分配</span>
+              <span @click="distribution(scope.row.customId)">分配</span>
               <span></span>
-              <span @click="editCusmoter(scope.row.id)">修改</span>
+              <span @click="editCusmoter(scope.row)">修改</span>
               <span></span>
               <el-popover
                 v-model="scope.row.isDeleteCusmoter"
@@ -95,7 +95,7 @@
                 width="160"
                 trigger="click">
                 <div class="delete-cusmoter">
-                  <el-button @click="deleteCusmoter(scope.row.id, scope.row)" size="small" type="primary">删除</el-button>
+                  <el-button @click="deleteCustomer(scope.row)" size="small" type="primary">删除</el-button>
                   <el-button @click="scope.row.isDeleteCusmoter = false" size="small" type="info" plain>取消</el-button>
                 </div>
                 <span slot="reference">删除</span>
@@ -107,19 +107,18 @@
     </div>
     <div class="page">
       <div class="select-all">
-        <el-checkbox size="small" v-model="selectAll" label="全选" border></el-checkbox>
-        <el-button size="small" @click="distributionDialogVisible = true">批量分配</el-button>
-        <el-button size="small" @click="deleteDialogVisible = true">删除</el-button>
+        <el-checkbox size="small" v-model="selectAll" @change="selectAllList" label="全选" border></el-checkbox>
+        <el-button size="small" @click="distributionAll">批量分配</el-button>
+        <el-button size="small" @click="deleteAllDialog">批量删除</el-button>
       </div>
       <el-pagination
         background
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
-        :current-page="page.page"
-        :page-sizes="[100, 200, 300, 400]"
-        :page-size="100"
+        :current-page="pagination.page"
+        :page-size="pagination.pageSize"
         layout="prev, pager, next, sizes, jumper"
-        :total="400">
+        :total="pagination.total">
       </el-pagination>
     </div>
     <div class="dialog">
@@ -132,7 +131,7 @@
         <span>是否删除选中客户？</span>
         <span slot="footer" class="dialog-footer">
           <el-button size="small" @click="deleteDialogVisible = false">取消</el-button>
-          <el-button size="small" type="primary" @click="deleteDialogVisible = false">确认</el-button>
+          <el-button size="small" type="primary" @click="deleteCustomerAll">确认</el-button>
         </span>
       </el-dialog>
       <el-dialog
@@ -141,55 +140,65 @@
         width="480px"
         :before-close="handleClose">
         <div class="dialog-line"></div>
-        <el-form :model="cusmoterForm" :rules="rules" size="small" ref="cusmoterForm" label-width="100px" label-position="top" class="demo-ruleForm">
-          <el-form-item label="客户分级" prop="classification">
-            <el-select v-model="cusmoterForm.classification" placeholder="请选择">
-              <el-option label="最高级" value="zuigaoji"></el-option>
-              <el-option label="一级" value="yiji"></el-option>
+        <el-form :model="cusmoterForm" :rules="rules" v-if="newCusmoterDialogVisible" size="small" ref="cusmoterForm" label-width="100px" label-position="top" class="demo-ruleForm">
+          <el-form-item label="客户分级" prop="level">
+            <el-select v-model="cusmoterForm.level" placeholder="请选择">
+              <el-option
+                v-for="item in customerLevelList"
+                :key="item"
+                :label="item"
+                :value="item">
+              </el-option>
             </el-select>
           </el-form-item>
           <el-form-item label="所属行业" prop="industry">
             <el-select v-model="cusmoterForm.industry" placeholder="请选择">
-              <el-option label="电子行业" value="dianzihangye"></el-option>
-              <el-option label="一级" value="yiji"></el-option>
+              <el-option
+                v-for="item in industryList"
+                :key="item"
+                :label="item"
+                :value="item">
+              </el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="客户姓名" prop="name">
-            <el-input v-model="cusmoterForm.name" placeholder="请输入客户姓名"></el-input>
+          <el-form-item label="客户姓名" prop="customName">
+            <el-input v-model="cusmoterForm.customName" placeholder="请输入客户姓名"></el-input>
           </el-form-item>
-          <el-form-item label="手机号" prop="tel">
-            <el-input v-model="cusmoterForm.tel" placeholder="请输入手机号"></el-input>
+          <el-form-item label="手机号" prop="customPhone">
+            <el-input v-model="cusmoterForm.customPhone" placeholder="请输入手机号"></el-input>
           </el-form-item>
-          <el-form-item label="公司名称" prop="company">
-            <el-input v-model="cusmoterForm.company" placeholder="请输入公司名称"></el-input>
+          <el-form-item label="公司名称" prop="companyName">
+            <el-input v-model="cusmoterForm.companyName" placeholder="请输入公司名称"></el-input>
           </el-form-item>
-          <el-form-item label="客户职位" prop="position">
-            <el-select v-model="cusmoterForm.position" placeholder="请选择">
-              <el-option label="销售" value="xiaoshou"></el-option>
-            </el-select>
+          <el-form-item label="客户职位" prop="customPost">
+            <el-input v-model="cusmoterForm.customPost"></el-input>
           </el-form-item>
-          <el-form-item label="客户标签" prop="checkedTags">
+          <el-form-item label="客户标签" prop="customTags">
             <div class="tag-arr">
-              <el-checkbox-group v-model="cusmoterForm.checkedTags" size="small">
-                <el-checkbox size="small" v-for="tag in tagOptions" :label="tag" :key="tag">{{tag}}<i class="el-icon-check"></i></el-checkbox>
+              <el-checkbox-group v-model="cusmoterForm.customTags" size="small">
+                <el-checkbox size="small" v-for="tag in tagList" :label="tag" :key="tag">{{ tag }}<i class="el-icon-check"></i></el-checkbox>
               </el-checkbox-group>
               <div class="add-tag" @click="isAdd ? isAdd = false : isAdd = true"><i class="el-icon-plus"></i>新增标签</div>
-              <div class="input-tag" v-show="isAdd">
+              <div class="input-tag" v-show="!isAdd">
                 <el-input size="small" v-model="addTag"></el-input>
-                <el-button size="small" type="primary">新增</el-button>
+                <el-button size="small" @click="newTag" type="primary">新增</el-button>
               </div>
             </div>
           </el-form-item>
-          <el-form-item label="所属人" prop="region">
-            <el-select v-model="cusmoterForm.region" filterable placeholder="请选择">
-              <el-option label="销售1" value="xiaoshouyi"></el-option>
-              <el-option label="销售2" value="销售2"></el-option>
+          <el-form-item label="所属人" prop="chargeManId">
+            <el-select v-model="cusmoterForm.chargeManId" filterable placeholder="请选择">
+              <el-option
+                v-for="item in accountList"
+                :key="item.accountId"
+                :label="item.realName"
+                :value="item.accountId">
+              </el-option>
             </el-select>
           </el-form-item>
         </el-form>
         <span slot="footer" class="dialog-footer">
           <el-button size="small" @click="newCusmoterDialogVisible = false">取消</el-button>
-          <el-button size="small" type="primary" @click="newCusmoterDialogVisible = false">{{ butoonText }}</el-button>
+          <el-button size="small" type="primary" @click="newCustomer('cusmoterForm')">{{ butoonText }}</el-button>
         </span>
       </el-dialog>
       <el-dialog
@@ -198,17 +207,21 @@
         width="480px"
         :before-close="handleClosDistribution">
         <div class="dialog-line"></div>
-        <el-form :model="distributionRuleForm" :rules="distributionRules" size="small" ref="distributionRuleForm" label-width="100px" label-position="top" class="demo-ruleForm">
-          <el-form-item label="所属人" prop="region">
-            <el-select v-model="distributionRuleForm.region" filterable placeholder="请选择">
-              <el-option label="分组一" value="shanghai"></el-option>
-              <el-option label="分组二" value="beijing"></el-option>
+        <el-form :model="distributionRuleForm" :rules="distributionRules" v-if="distributionDialogVisible" size="small" ref="distributionRuleForm" label-width="100px" label-position="top" class="demo-ruleForm">
+          <el-form-item label="所属人" prop="chargeManId">
+            <el-select v-model="distributionRuleForm.chargeManId" filterable placeholder="请选择">
+              <el-option
+                v-for="item in accountList"
+                :key="item.accountId"
+                :label="item.realName"
+                :value="item.accountId">
+              </el-option>
             </el-select>
           </el-form-item>
         </el-form>
         <span slot="footer" class="dialog-footer">
           <el-button size="small" @click="distributionDialogVisible = false">取消</el-button>
-          <el-button size="small" type="primary" @click="distributionDialogVisible = false">确认</el-button>
+          <el-button size="small" type="primary" @click="distributionSave">确认</el-button>
         </span>
       </el-dialog>
     </div>
@@ -216,104 +229,39 @@
 </template>
 
 <script>
+import { postAccountQuery, postCustomerQuery, postCommonLevel, postCommonIndustry, postCommonTag, postCommonTagAdd, postAccountList, postCommonCreate, postCustomEdit, postCustomDelete, postCustomBtachGroup } from '@/api/api'
 export default {
   data () {
     return {
-      cusmoterInput: '',
-      grouping: '',
-      options: [{
-        value: '选项1',
-        label: '分组一'
-      }, {
-        value: '选项2',
-        label: '分组二'
-      }, {
-        value: '选项3',
-        label: '分组三'
-      }, {
-        value: '选项4',
-        label: '分组四'
-      }, {
-        value: '选项5',
-        label: '分组五'
-      }],
-      tableData: [{
-        classification: '最高级',
-        tel: '18810001000',
-        distributor: '哈哈哈公司',
-        name: '王小虎',
-        condition: '电子行业',
-        people: '销售',
-        id: 1,
-        isDeleteCusmoter: false
-      }, {
-        classification: '最高级',
-        tel: '18810001000',
-        distributor: '哈哈哈公司',
-        name: '王小虎',
-        condition: '电子行业',
-        people: '销售',
-        id: 2,
-        isDeleteCusmoter: false
-      }, {
-        classification: '最高级',
-        tel: '18810001000',
-        distributor: '哈哈哈公司',
-        name: '王小虎',
-        condition: '电子行业',
-        people: '销售',
-        id: 3,
-        isDeleteCusmoter: false
-      }, {
-        classification: '最高级',
-        tel: '18810001000',
-        distributor: '哈公司',
-        name: '王小虎',
-        condition: '电子行业',
-        people: '销售',
-        id: 4,
-        isDeleteCusmoter: false
-      }, {
-        classification: '最高级',
-        tel: '18810001000',
-        distributor: '公司',
-        name: '王小虎',
-        condition: '电子行业',
-        people: '销售',
-        id: 4,
-        isDeleteCusmoter: false
-      }, {
-        classification: '最高级',
-        tel: '18810001000',
-        distributor: '公司',
-        name: '王小虎',
-        condition: '电子行业',
-        people: '销售',
-        id: 5,
-        isDeleteCusmoter: false
-      }],
+      key: '',
+      groupId: '',
+      groupArr: [], // 分组下拉框列表
+      tableData: [],
       selectAll: false, // 下边全选按钮
       deleteDialogVisible: false,
-      page: {
-        page: 5
+      pagination: {
+        page: 1,
+        pageSize: 10,
+        total: 0
       },
       cusmoterFormTitle: '新建客户',
       butoonText: '添加',
       newCusmoterDialogVisible: false,
       cusmoterForm: {
-        name: '',
+        customId: '',
+        customName: '',
         remarks: '',
-        region: '',
-        classification: '',
+        chargeManId: '',
+        level: '',
         industry: '',
-        tel: '',
-        company: '',
-        position: '',
-        checkedTags: []
+        customPhone: '',
+        customPost: '',
+        companyName: '',
+        customTags: []
       },
       addTag: '',
       rules: {
-        classification: [
+        level: [
            { required: true, message: '请选择客户分级', trigger: 'change' }
         ],
         industry: [
@@ -322,46 +270,192 @@ export default {
         remarks: [
            { required: true, message: '请输入备注', trigger: 'blur' }
         ],
-        name: [
+        customName: [
            { required: true, message: '请输入客户姓名', trigger: 'blur' }
         ],
-        tel: [
+        customPhone: [
            { required: true, message: '请输入手机号', trigger: 'blur' }
         ],
-        company: [
+        companyName: [
            { required: true, message: '请输入公司名称', trigger: 'blur' }
         ],
-        position: [
+        customPost: [
            { required: true, message: '请选择客户职位', trigger: 'change' }
         ],
-        checkedTags: [
+        customTags: [
             { type: 'array', required: true, message: '请至少选择一个客户标签', trigger: 'change' }
           ],
-        region: [
-           { required: true, message: '请选择分配给', trigger: 'change' }
+        chargeManId: [
+           { required: true, message: '请选择所属人', trigger: 'change' }
         ]
       },
       tagOptions: ['有意向', '潜在客户', '战略投资', 'B轮融资', '战略'],
       isAdd: true,
       distributionDialogVisible: false,
       distributionRuleForm: {
-        region: ''
+        chargeManId: ''
       },
       distributionRules: {
-        region: [
-           { required: true, message: '请选择组', trigger: 'change' }
+        chargeManId: [
+           { required: true, message: '请选择所属人', trigger: 'change' }
         ]
-      }
+      },
+
+      customerLevelList: [],
+      industryList: [],
+      tagList: [],
+      accountList: [],
+      deleteCustomerArr: [],
+      distributionCustomId: ''
     }
   },
+  created () {
+    this.getCustomerList()
+    postAccountQuery().then(res => {
+      if (res.code === 0) {
+        this.groupArr = res.data.groups
+      }
+    })
+    postCommonLevel().then(res => {
+      if (res.code === 0) {
+        this.customerLevelList = res.data.levels
+      }
+    })
+    postCommonIndustry().then(res => {
+      if (res.code === 0) {
+        this.industryList = res.data.industries
+      }
+    })
+    postCommonTag().then(res => {
+      if (res.code === 0) {
+        this.tagList = res.data.tags
+      }
+    })
+    postAccountList().then(res => {
+      if (res.code === 0) {
+        this.accountList = res.data.accounts
+      }
+    })
+  },
   methods: {
+    // 全选底部按钮
+    selectAllList () {
+      if (this.selectAll) {
+        this.tableData.forEach(row => {
+          this.$refs.multipleTable.toggleRowSelection(row)
+        })
+        this.deleteCustomerArr = this.tableData
+      } else {
+        this.$refs.multipleTable.clearSelection();
+        this.deleteCustomerArr = []
+      }
+    },
+    // 新建标签
+    newTag () {
+      if (this.addTag === '') return this.$message.warning('请输入标签名')
+      postCommonTagAdd().then(res => {
+        if (res.code === 0) {
+          this.tagList.push(this.addTag)
+          this.$message.success('添加标签成功')
+        }
+      })
+    },
+    // 点击查询按钮
+    search () {
+      this.pagination.page = 1
+      this.pagination.pageSize = 10
+      this.getCustomerList()
+    },
+    // 获取客户列表
+    getCustomerList () {
+      const params = {
+        key: this.key,
+        pageNo: this.pagination.page,
+        pageSize: this.pagination.pageSize,
+        groupId: this.groupId
+      }
+      postCustomerQuery(params).then(res => {
+        if (res.code === 0) {
+          res.data.customs.forEach(e => {
+            e.isDeleteCusmoter = false
+          })
+          this.tableData = res.data.customs
+          this.pagination.total = Number(res.data.totalCount)
+        }
+      })
+    },
     addCusmoter () {
+      this.cusmoterForm.customId = ''
+      this.cusmoterForm.level = ''
+      this.cusmoterForm.industry = ''
+      this.cusmoterForm.customName = ''
+      this.cusmoterForm.companyName = ''
+      this.cusmoterForm.customPhone = ''
+      this.cusmoterForm.customPost = ''
+      this.cusmoterForm.customTags = []
+      this.cusmoterForm.chargeManId = ''
       this.newCusmoterDialogVisible = true
       this.cusmoterFormTitle = '新建客户',
       this.butoonText = '添加'
     },
-    editCusmoter (id) {
-      console.log(id)
+    // 新建客户
+    newCustomer (formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          if (this.cusmoterFormTitle === '新建客户') {
+            const params = {
+              level: this.cusmoterForm.level,
+              industry: this.cusmoterForm.industry,
+              customName: this.cusmoterForm.customName,
+              companyName: this.cusmoterForm.companyName,
+              customPhone: this.cusmoterForm.customPhone,
+              customPost: this.cusmoterForm.customPost,
+              customTags: this.cusmoterForm.customTags,
+              chargeManId: this.cusmoterForm.chargeManId
+            }
+            postCommonCreate(params).then(res => {
+              if (res.code === 0) {
+                this.$message.success('新建客户成功')
+                this.getCustomerList()
+                this.newCusmoterDialogVisible = false
+              }
+            })
+          } else if (this.cusmoterFormTitle === '修改客户') {
+            const params = {
+              customId: this.cusmoterForm.customId,
+              level: this.cusmoterForm.level,
+              industry: this.cusmoterForm.industry,
+              customName: this.cusmoterForm.customName,
+              companyName: this.cusmoterForm.companyName,
+              customPhone: this.cusmoterForm.customPhone,
+              customPost: this.cusmoterForm.customPost,
+              customTags: this.cusmoterForm.customTags,
+              chargeManId: this.cusmoterForm.accountId
+            }
+            postCustomEdit(params).then(res => {
+              if (res.code === 0) {
+                this.$message.success('修改客户成功')
+                this.getCustomerList()
+                this.newCusmoterDialogVisible = false
+              }
+            })
+          }
+        } else {
+          console.log('error submit!!');
+          return false;
+        }
+      });
+    },
+    editCusmoter (row) {
+      this.cusmoterForm.customId = row.customId
+      this.cusmoterForm.level = row.level
+      this.cusmoterForm.industry = row.industry
+      this.cusmoterForm.customName = row.customName
+      this.cusmoterForm.companyName = row.companyName
+      this.cusmoterForm.customPhone = row.customPhone
+      this.cusmoterForm.customPost = row.customPost
+      this.cusmoterForm.customTags = row.customTag
+      this.cusmoterForm.chargeManId = row.chargeManId
       this.newCusmoterDialogVisible = true
       this.cusmoterFormTitle = '修改客户'
       this.butoonText = '提交'
@@ -379,19 +473,83 @@ export default {
     },
     // 分页
     handleSizeChange(val) {
-      console.log(`每页 ${val} 条`);
+      this.pagination.pageSize = val
+      this.getCustomerList()
     },
     handleCurrentChange(val) {
-      console.log(`当前页: ${val}`);
+      this.pagination.page = val
+      this.getCustomerList()
     },
-    // 关闭新建规则弹窗
+    // 关闭新客户则弹窗
     handleClose () {
       this.newCusmoterDialogVisible = false
     },
-    // 删除规则气泡
-    deleteCusmoter (id, row) {
-      console.log(id)
-      row.isDeleteCusmoter = false
+    // 删除客户气泡
+    deleteCustomer (row) {
+      postCustomDelete({ customIds: [row.customId] }).then(res => {
+        if (res.code === 0) {
+          this.$message.success('删除客户成功')
+          this.getCustomerList()
+          row.isDeleteCusmoter = false
+        }
+      })
+    },
+    // 删除选中客户
+    deleteAllDialog () {
+      if (this.deleteCustomerArr.length === 0) return this.$message.warning('请选择客户')
+      this.deleteDialogVisible = true
+    },
+    deleteCustomerAll () {
+      const params = this.deleteCustomerArr.map(e => {
+        return e.customId
+      })
+      postCustomDelete(params).then(res => {
+        if (res.code === 0) {
+          this.$message.success('删除客户成功')
+          this.getCustomerList()
+          this.deleteDialogVisible = false
+        }
+      })
+    },
+    // 分配
+    distribution (id) {
+      this.distributionDialogVisible = true
+      this.distributionCustomId = id
+    },
+    distributionAll () {
+      if (this.deleteCustomerArr.length === 0) return this.$message.warning('请选择客户')
+      this.distributionDialogVisible = true
+    },
+    distributionSave () {
+      if (this.distributionCustomId) {
+        const params = {
+          customIds: [this.distributionCustomId],
+          chargeManId: this.distributionRuleForm.chargeManId
+        }
+        postCustomBtachGroup(params).then(res => {
+          if (res.code === 0) {
+            this.$message.success('分配成功')
+            this.distributionCustomId = ''
+            this.getCustomerList()
+            this.distributionDialogVisible = false
+          }
+        })
+      } else {
+        const params = {
+          customIds: this.deleteCustomerArr.map(e => {
+            return e.customId
+          }),
+          chargeManId: this.distributionRuleForm.chargeManId
+        }
+        postCustomBtachGroup(params).then(res => {
+          if (res.code === 0) {
+            this.$message.success('分配成功')
+            this.distributionCustomId = ''
+            this.getCustomerList()
+            this.distributionDialogVisible = false
+          }
+        })
+      }
     }
   }
 }
@@ -508,11 +666,9 @@ export default {
   background-color #d9d9d9
 
 .tag
-  overflow hidden
-  white-space nowrap
-  text-overflow ellipsis
   .el-tag
     margin-right 12px
+    margin-bottom 4px
 
 .tag-arr
   /deep/ .el-checkbox

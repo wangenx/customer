@@ -133,7 +133,7 @@
         <div class="dialog-top"></div>
         <el-form :model="form" :rules="rules" ref="ruleForm" label-width="140px" class="demo-ruleForm">
           <el-form-item label="指派给：" prop="groupId">
-            <el-select v-model="form.groupId" size="small" placeholder="请选择分组">
+            <el-select v-model="form.groupId" @change="changeGroup" size="small" placeholder="请选择分组">
               <el-option
                 v-for="item in accountQuery"
                 :key="item.groupId"
@@ -166,8 +166,8 @@
           <div class="programme clearfix" v-show="!isCalculation">
             <div class="price-icon"></div>
             <div class="programme-font">
-              <div>价格方案：（3000条-30条）*0.6元= 4000元</div>
-              <div>分配方案： 小组一每人分配 99条</div>
+              <div>价格方案：（{{ form.purchaseNum }}条-{{ form.expirationNum }}条）*{{ totalQuery.perCastMoney }}元= {{ totalNum }}元</div>
+              <div>分配方案： 小组一每人分配 {{ pieces }}条</div>
             </div>
           </div>
         </div>
@@ -180,7 +180,7 @@
 </template>
 
 <script>
-import { dispatchList, postTotalQuery, postAccountQuery, postTaskQuery, postTaskExpiration, postTaskCreate } from '@/api/api'
+import { dispatchList, postTotalQuery, postAccountQuery, postTaskQuery, postTaskExpiration, postTaskCreate, postAccountList } from '@/api/api'
 export default {
   data () {
     var validatePurchaseNum = (rule, value, callback) => {
@@ -247,7 +247,10 @@ export default {
       },
       dialogShow: false,
       taskExpirationNum: 0,
-      isCalculation: true
+      isCalculation: true,
+      totalNum: 0,
+      accountList: 0,
+      pieces: 0
     }
   },
   created () {
@@ -293,9 +296,19 @@ export default {
       });
       
     },
+    // 获取组人员数量
+    changeGroup () {
+      postAccountList({ groupId: this.form.groupId }).then(res => {
+        if (res.code === 0) {
+          this.accountList = res.data.accounts.length
+        }
+      })
+    },
     // 是否显示计算
     changePurchaseNum () {
-      if (this.form.purchaseNum !== '' && this.form.expirationNum !== '') {
+      if (this.form.purchaseNum !== '' && this.form.expirationNum !== '' && this.form.groupId !== '') {
+        this.totalNum = ((this.form.purchaseNum - this.form.expirationNum) * this.totalQuery.perCastMoney).toFixed(2)
+        this.pieces = ((this.form.purchaseNum - this.form.expirationNum) / this.accountList).toFixed()
         this.isCalculation = false
       } else {
         this.isCalculation = true
@@ -530,7 +543,7 @@ export default {
     > .number-tips
       position absolute
       left 312px
-      bottom 163px
+      bottom 218px
       color #ff0000
       font-size 14px
       line-height 20px
@@ -556,7 +569,7 @@ export default {
       width 26px
       height 26px
       margin-right 10px
-      background-color #ccc
+      background url('../../assets/images/price-icon.svg') no-repeat
   > .programme
     padding-left 62px
     > div
@@ -564,7 +577,7 @@ export default {
     > .price-icon
       width 26px
       height 26px
-      background-color #ccc
+      background url('../../assets/images/price-icon.svg') no-repeat
     > .programme-font
       font-size 14px
       color #4891fe

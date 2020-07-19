@@ -5,8 +5,8 @@
     </div>
     <div class="rule-head clearfix">
       <div class="search">
-        <el-input v-model="ruleInput" size="small" placeholder="请输入内容"></el-input>
-        <el-button size="small" type="primary">查询</el-button>
+        <el-input v-model="key" size="small" placeholder="请输入内容"></el-input>
+        <el-button size="small" @click="searchList" type="primary">查询</el-button>
       </div>
       <div class="operation">
         <el-button size="small" type="primary" @click="addRule"><i class="el-icon-plus"></i>新建规则</el-button>
@@ -24,18 +24,24 @@
           width="55">
         </el-table-column>
         <el-table-column
-          label="订单名称"
+          label="规则名称"
+          show-overflow-tooltip
           width="120">
-          <template slot-scope="scope">{{ scope.row.name }}</template>
+          <template slot-scope="scope">{{ scope.row.ruleName }}</template>
         </el-table-column>
         <el-table-column
           prop="condition"
           label="条件"
           width="240"
           show-overflow-tooltip>
+          <template slot-scope="scope">
+            <div v-for="(item, index) in scope.row.conditions" :key="index">
+              <div>{{ item.conditionName }}&nbsp;{{ item.conditionRule }}&nbsp;{{ item.conditionVal }}</div>
+            </div>
+          </template>
         </el-table-column>
         <el-table-column
-          prop="distributor"
+          prop="groupName"
           label="分配人"
           show-overflow-tooltip>
         </el-table-column>
@@ -44,7 +50,7 @@
           width="180">
           <template slot-scope="scope">
             <div class="operation clearfix">
-              <span @click="editRule(scope.row.id)">修改</span>
+              <span @click="editRule(scope.row)">修改</span>
               <span></span>
               <el-popover
                 v-model="scope.row.isDeleteRule"
@@ -52,7 +58,7 @@
                 width="160"
                 trigger="click">
                 <div class="delete-rule">
-                  <el-button @click="deleteRule(scope.row.id, scope.row)" size="small" type="primary">删除</el-button>
+                  <el-button @click="deleteRule(scope.row)" size="small" type="primary">删除</el-button>
                   <el-button @click="scope.row.isDeleteRule = false" size="small" type="info" plain>取消</el-button>
                 </div>
                 <span slot="reference">删除</span>
@@ -64,18 +70,17 @@
     </div>
     <div class="page">
       <div class="select-all">
-        <el-checkbox size="small" v-model="selectAll" label="全选" border></el-checkbox>
-        <el-button size="small" @click="deleteDialogVisible = true">删除</el-button>
+        <el-checkbox size="small" v-model="selectAll" @change="selectRules" label="全选" border></el-checkbox>
+        <el-button size="small" @click="DeleteRules">删除</el-button>
       </div>
       <el-pagination
         background
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
-        :current-page="page.page"
-        :page-sizes="[100, 200, 300, 400]"
-        :page-size="100"
+        :current-page="pagination.page"
+        :page-size="pagination.pageSize"
         layout="prev, pager, next, sizes, jumper"
-        :total="400">
+        :total="pagination.total">
       </el-pagination>
     </div>
     <div class="dialog">
@@ -98,70 +103,46 @@
         :before-close="handleClose">
         <div class="dialog-line"></div>
         <el-form :model="ruleForm" :rules="rules" size="small" ref="ruleForm" label-width="100px" label-position="top" class="demo-ruleForm">
-          <el-form-item label="规则名称" prop="name">
-            <el-input v-model="ruleForm.name" placeholder="请输入规则名称"></el-input>
+          <el-form-item label="规则名称" prop="ruleName">
+            <el-input v-model="ruleForm.ruleName" placeholder="请输入规则名称"></el-input>
           </el-form-item>
           <el-form-item label="条件">
-            <div class="condition">
-              <el-select v-model="ruleForm.address" placeholder="请选择">
-                <el-option label="城市" value="chengshi"></el-option>
-                <el-option label="地区" value="diqu"></el-option>
+            <div v-for="(item, index) in ruleForm.conditions" :key="index" class="condition">
+              <el-select v-model="item.conditionName" placeholder="请选择">
+                <el-option label="城市" value="城市"></el-option>
               </el-select>
-              <el-select v-model="ruleForm.size" placeholder="请选择">
-                <el-option label="等于" value="dengyu"></el-option>
-                <el-option label="小于" value="xiaoyu"></el-option>
-              </el-select>
-              <el-select
-                v-model="ruleForm.city"
-                multiple
-                filterable
-                allow-create
-                default-first-option>
-                <el-option
-                  v-for="item in optionsCity"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value">
-                </el-option>
-              </el-select>
-              <span>删除</span>
-            </div>
-            <div class="condition">
-              <el-select v-model="ruleForm.address" placeholder="请选择">
-                <el-option label="城市" value="chengshi"></el-option>
-                <el-option label="地区" value="diqu"></el-option>
-              </el-select>
-              <el-select v-model="ruleForm.size" placeholder="请选择">
-                <el-option label="等于" value="dengyu"></el-option>
-                <el-option label="小于" value="xiaoyu"></el-option>
+              <el-select v-model="item.conditionRule" placeholder="请选择">
+                <el-option label="等于" value="等于"></el-option>
+                <el-option label="小于" value="小于"></el-option>
               </el-select>
               <el-select
-                v-model="ruleForm.city"
-                multiple
-                filterable
-                allow-create
-                default-first-option>
+                v-model="item.conditionVal"
+                placeholder="请选择城市">
                 <el-option
-                  v-for="item in optionsCity"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value">
+                  v-for="e in optionsCity"
+                  :key="e.value"
+                  :label="e.label"
+                  :value="e.value">
                 </el-option>
               </el-select>
-              <span>删除</span>
+              <span @click="deleteConditions(item)">删除</span>
             </div>
-            <span class="addCondition"><i class="el-icon-plus"></i>新增</span>
+            <span class="addCondition" @click="addConditions"><i class="el-icon-plus"></i>新增</span>
           </el-form-item>
-          <el-form-item label="分配给" prop="region">
-            <el-select v-model="ruleForm.region" filterable placeholder="请选择">
-              <el-option label="分组一" value="shanghai"></el-option>
-              <el-option label="分组二" value="beijing"></el-option>
+          <el-form-item label="分配给" prop="chargeGroupId">
+            <el-select v-model="ruleForm.chargeGroupId" filterable placeholder="请选择分组">
+              <el-option
+                v-for="item in groupArr"
+                :key="item.groupId"
+                :label="item.groupName"
+                :value="item.groupId">
+              </el-option>
             </el-select>
           </el-form-item>
         </el-form>
         <span slot="footer" class="dialog-footer">
           <el-button size="small" @click="newRuleDialogVisible = false">取消</el-button>
-          <el-button size="small" type="primary" @click="newRuleDialogVisible = false">{{ butoonText }}</el-button>
+          <el-button size="small" type="primary" @click="newRule('ruleForm')">{{ butoonText }}</el-button>
         </span>
       </el-dialog>
     </div>
@@ -169,99 +150,296 @@
 </template>
 
 <script>
+import { postAccountQuery, postRuleCreate, postRuleQuery, postRuleEdit, postRuleDelete } from '@/api/api'
 export default {
   data () {
     return {
-      ruleInput: '',
-      tableData: [{
-        distributor: '小组1',
-        name: '王小虎',
-        condition: '城市=上海；年龄>18;',
-        id: 1,
-        isDeleteRule: false
-      }, {
-        distributor: '小组1',
-        name: '王小虎',
-        condition: '城市=上海；年龄>18;',
-        id: 2,
-        isDeleteRule: false
-      }, {
-        distributor: '小组1',
-        name: '王小虎',
-        condition: '城市=上海；年龄>18;',
-        id: 3,
-        isDeleteRule: false
-      }, {
-        distributor: '小组1',
-        name: '王小虎',
-        condition: '城市=上海；年龄>18;',
-        id: 4,
-        isDeleteRule: false
-      }, {
-        distributor: '小组1',
-        name: '王小虎',
-        condition: '城市=上海；年龄>18;',
-        id: 4,
-        isDeleteRule: false
-      }, {
-        distributor: '小组1',
-        name: '王小虎',
-        condition: '城市=上海；年龄>18;',
-        id: 5,
-        isDeleteRule: false
-      }],
+      key: '',
+      tableData: [],
       selectAll: false, // 下边全选按钮
       deleteDialogVisible: false,
-      page: {
-        page: 5
+      pagination: {
+        page: 1,
+        pageSize: 10,
+        total: 0
       },
       ruleFormTitle: '新建规则',
       butoonText: '添加',
       newRuleDialogVisible: false,
       ruleForm: {
-        name: '',
-        remarks: '',
-        region: '',
-        city: ['shanghai'],
-        address: ''
+        ruleId: '',
+        ruleName: '',
+        chargeGroupId: '',
+        conditions: [
+          {
+            conditionName: '城市',
+            conditionRule: '',
+            conditionVal: ''
+          }
+        ],
       },
+      groupArr: [], // 下拉框分组列表
       rules: {
-        name: [
+        ruleName: [
            { required: true, message: '请输入规则名称', trigger: 'blur' }
         ],
-        remarks: [
-           { required: true, message: '请输入备注', trigger: 'blur' }
-        ],
-        region: [
-           { required: true, message: '请选择分配给', trigger: 'change' }
+        chargeGroupId: [
+           { required: true, message: '请输选择分组', trigger: 'change' }
         ]
       },
-      optionsCity: [{
-        value: 'shanghai',
-        label: '上海'
-      }, {
-        value: 'beijing',
+      deleteRuleArr: [],
+      optionsCity: [
+        {
+        value: '辽宁',
+        label: '辽宁'
+        },
+        {
+        value: '吉林',
+        label: '吉林'
+        },
+        {
+          value: '黑龙江',
+          label: '黑龙江'
+        },
+        {
+        value: '河北',
+        label: '河北'
+        },
+        {
+        value: '山西',
+        label: '山西'
+        },
+        {
+          value: '陕西',
+          label: '陕西'
+        },
+
+        {
+        value: '甘肃',
+        label: '甘肃'
+        },
+        {
+        value: '青海',
+        label: '青海'
+        },
+        {
+          value: '山东',
+          label: '山东'
+        },
+        {
+        value: '安徽',
+        label: '安徽'
+        },
+        {
+        value: '江苏',
+        label: '江苏'
+        },
+        {
+          value: '浙江',
+          label: '浙江'
+        },
+        {
+        value: '河南',
+        label: '河南'
+        },
+        {
+        value: '湖北',
+        label: '湖北'
+        },
+        {
+          value: '湖南',
+          label: '湖南'
+        },
+        {
+        value: '江西',
+        label: '江西'
+        },
+        {
+        value: '台湾',
+        label: '台湾'
+        },
+        {
+          value: '福建',
+          label: '福建'
+        },
+        {
+        value: '云南',
+        label: '云南'
+        },
+        {
+        value: '海南',
+        label: '海南'
+        },
+        {
+          value: '四川',
+          label: '四川'
+        },
+        {
+        value: '贵州',
+        label: '贵州'
+        },
+        {
+        value: '广东',
+        label: '广东'
+        },
+        {
+          value: '内蒙古',
+          label: '内蒙古'
+        },
+        {
+        value: '新疆',
+        label: '新疆'
+        },
+        {
+        value: '广西',
+        label: '广西'
+        },
+        {
+          value: '西藏',
+          label: '西藏'
+        },
+        {
+        value: '宁夏',
         label: '北京'
-      }, {
-        value: 'shenzhen',
-        label: '深圳'
-      }]
+        },
+        {
+        value: '上海',
+        label: '上海'
+        },
+        {
+          value: '天津',
+          label: '天津'
+        },
+        {
+        value: '重庆',
+        label: '重庆'
+        },
+        {
+        value: '香港',
+        label: '香港'
+        },
+        {
+          value: '澳门',
+          label: '澳门'
+        }
+      ]
     }
   },
+  created () {
+    this.getRuleList()
+    postAccountQuery().then(res => {
+      if (res.code === 0) {
+        this.groupArr = res.data.groups
+      }
+    })
+  },
   methods: {
+    // 点击搜索按钮
+    searchList () {
+      this.pagination.page = 1
+      this.pagination.pageSize = 10
+      this.getRuleList()
+    },
+    // 获取规则列表
+    getRuleList () {
+      const params = {
+        key: this.key,
+        pageSize: this.pagination.pageSize,
+        pageNo: this.pagination.page
+      }
+      postRuleQuery(params).then(res => {
+        if (res.code === 0) {
+          res.data.rules.forEach(e => {
+            e.isDeleteRule = false
+          })
+          this.tableData = res.data.rules
+          this.pagination.total = Number(res.data.totalCount)
+        }
+      })
+    },
+    // 新增新建账号条件
+    addConditions () {
+      this.ruleForm.conditions.push({
+        conditionName: '城市',
+        conditionRule: '',
+        conditionVal: ''
+      })
+    },
+    // 删除新增账号条件
+    deleteConditions(item) {
+      if (this.ruleForm.conditions.length === 1) return this.$message.error('至少保留一个条件')
+      this.ruleForm.conditions.splice(this.ruleForm.conditions.indexOf(item), 1)
+    },
     addRule () {
+      this.ruleForm.ruleId = ''
+      this.ruleForm.ruleName = ''
+      this.ruleForm.chargeGroupId = ''
+      this.ruleForm.conditions = [
+        {
+          conditionName: '城市',
+          conditionRule: '',
+          conditionVal: ''
+        }
+      ]
       this.newRuleDialogVisible = true
       this.ruleFormTitle = '新建规则',
       this.butoonText = '添加'
     },
-    editRule (id) {
-      console.log(id)
+    // 新建条件提交
+    newRule (formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          for (let i = 0; i < this.ruleForm.conditions.length; i++) {
+            if (this.ruleForm.conditions[i].conditionRule === '' || this.ruleForm.conditions[i].conditionVal === '') {
+              return this.$message.error('请填写条件')
+            }
+          }
+          if (this.ruleFormTitle === '新建规则') {
+            const params = {
+              ruleName: this.ruleForm.ruleName,
+              chargeGroupId: this.ruleForm.chargeGroupId,
+              conditions: this.ruleForm.conditions
+            }
+            postRuleCreate(params).then(res => {
+              if (res.code === 0) {
+                this.$message.success('新建规则成功')
+                this.newRuleDialogVisible = false
+              }
+            })
+          } else if (this.ruleFormTitle === '修改规则') {
+            const params = {
+              ruleId: this.ruleForm.ruleId,
+              ruleName: this.ruleForm.ruleName,
+              chargeGroupId: this.ruleForm.chargeGroupId,
+              conditions: this.ruleForm.conditions
+            }
+            postRuleEdit(params).then(res => {
+              if (res.code === 0) {
+                this.$message.success('修改规则成功')
+                this.newRuleDialogVisible = false
+              }
+            })
+          }
+          
+        } else {
+          console.log('error submit!!');
+          return false;
+        }
+      });
+    },
+    editRule (row) {
+      this.ruleForm.ruleId = row.ruleId
+      this.ruleForm.ruleName = row.ruleName
+      this.ruleForm.chargeGroupId = row.chargeGroupId
+      let conditions = JSON.stringify(row.conditions)
+      this.ruleForm.conditions = JSON.parse(conditions)
       this.newRuleDialogVisible = true
       this.ruleFormTitle = '修改规则'
       this.butoonText = '提交'
     },
+    // 表格全选按钮
     handleSelectionChange (val) {
-      this.multipleSelection = val
+      this.deleteRuleArr = val
     },
     // 关闭删除弹窗
     handleClosDelete () {
@@ -269,19 +447,53 @@ export default {
     },
     // 分页
     handleSizeChange(val) {
-      console.log(`每页 ${val} 条`);
+      this.pagination.pageSize = val
+      this.getRuleList()
     },
     handleCurrentChange(val) {
-      console.log(`当前页: ${val}`);
+      this.pagination.page = val
+      this.getRuleList()
     },
     // 关闭新建规则弹窗
     handleClose () {
       this.newRuleDialogVisible = false
     },
     // 删除规则气泡
-    deleteRule (id, row) {
-      console.log(id)
-      row.isDeleteRule = false
+    deleteRule (row) {
+      postRuleDelete({ ruleIds: [row.ruleId] }).then(res => {
+        if (res.code === 0) {
+          this.$message.success('删除规则成功')
+          this.getRuleList()
+        }
+      })
+    },
+    // 底部全选按钮
+    selectRules () {
+      if (this.selectAll) {
+        this.tableData.forEach(row => {
+          this.$refs.multipleTable.toggleRowSelection(row)
+        })
+        this.deleteRuleArr = this.tableData
+      } else {
+        this.$refs.multipleTable.clearSelection();
+        this.deleteRuleArr = []
+      }
+    },
+    // 删除多个规则
+    DeleteRules () {
+      if (this.deleteRuleArr.length > 0) {
+        const params = this.deleteRuleArr.map(e => {
+          return e.ruleId
+        })
+        postRuleDelete(params).then(res => {
+          if (res.code === 0) {
+            this.$message.success('删除规则成功')
+            this.getRuleList()
+          }
+        })
+      } else {
+        this.$message.warning('请选择规则')
+      }
     }
   }
 }

@@ -78,6 +78,71 @@ const postAccountDelete = (data) => {
   return request.get('/analog-data/account-delete.json', data)
 }
 
+// 新建规则
+const postRuleCreate = (data) => {
+  return request.get('/analog-data/rule-create.json', data)
+}
+
+// 获取规则列表
+const postRuleQuery = (data) => {
+  return request.get('/analog-data/rule-query.json', data)
+}
+
+// 新建规则
+const postRuleEdit = (data) => {
+  return request.get('/analog-data/rule-edit.json', data)
+}
+
+// 删除规则
+const postRuleDelete = (data) => {
+  return request.get('/analog-data/rule-delete.json', data)
+}
+
+// 查询客户列表
+const postCustomerQuery = (data) => {
+  return request.get('/analog-data/customer-query.json', data)
+}
+
+// 查询客户分级
+const postCommonLevel = (data) => {
+  return request.get('/analog-data/common-level.json', data)
+}
+
+// 查询客户所属行业
+const postCommonIndustry = (data) => {
+  return request.get('/analog-data/common-industry.json', data)
+}
+
+// 查询客户标签
+const postCommonTag = (data) => {
+  return request.get('/analog-data/common-tag.json', data)
+}
+
+// 添加客户标签
+const postCommonTagAdd = (data) => {
+  return request.get('/analog-data/common-tag-add.json', data)
+}
+
+// 新建客户
+const postCommonCreate = (data) => {
+  return request.get('/analog-data/common-create.json', data)
+}
+
+// 编辑客户
+const postCustomEdit = (data) => {
+  return request.get('/analog-data/custom-edit.json', data)
+}
+
+// 删除客户
+const postCustomDelete = (data) => {
+  return request.get('/analog-data/custom-delete.json', data)
+}
+
+// 批量分配(客户管理)
+const postCustomBtachGroup = (data) => {
+  return request.get('/analog-data/custom-batch-group.json', data)
+}
+
 export {
   login,
   dispatchList,
@@ -94,5 +159,18 @@ export {
   postAccountCreate,
   postAccountEdit,
   postAccountList,
-  postAccountDelete
+  postAccountDelete,
+  postRuleCreate,
+  postRuleQuery,
+  postRuleEdit,
+  postRuleDelete,
+  postCustomerQuery,
+  postCommonLevel,
+  postCommonIndustry,
+  postCommonTag,
+  postCommonTagAdd,
+  postCommonCreate,
+  postCustomEdit,
+  postCustomDelete,
+  postCustomBtachGroup
 }

@@ -14,7 +14,7 @@
           </el-option>
         </el-select>
         <el-input v-model="form.key" size="small" placeholder="请输入分组名"></el-input>
-        <el-button size="small" type="primary">查询</el-button>
+        <el-button size="small" @click="getGroupList()" type="primary">查询</el-button>
       </div>
       <div class="operation">
         <el-button size="small" @click="addGroup">新建分组</el-button>
@@ -342,6 +342,12 @@ export default {
     })
   },
   methods: {
+    // 点击搜索按钮
+    searchList () {
+      this.pagination.page = 1
+      this.pagination.pageSize = 10
+      this.getGroupList()
+    },
     // 点击账号每一行
     accountRowClick (row) {
       row.isClick = true
@@ -353,7 +359,7 @@ export default {
       )
     },
     deleteAllAccount () {
-      this.deleteArrAccount.length > 0 ? this.deleteAccountDialogVisible = true : this.$message.error('请选择账号')
+      this.deleteArrAccount.length > 0 ? this.deleteAccountDialogVisible = true : this.$message.warning('请选择账号')
     },
     // 查询分组列表
     getGroupList () {
@@ -424,7 +430,7 @@ export default {
       if (this.deleteArrGroup.length > 0) {
         this.deleteDialogVisible = true
       } else {
-        this.$message.error('请选择分组')
+        this.$message.warning('请选择分组')
       }
     },
     deleteGroupAll () {
@@ -561,7 +567,7 @@ export default {
       this.ruleForm.groupId = ''
       this.ruleForm.realName = ''
       this.ruleForm.ruleFormTitle = '新建账号'
-      this.ruleForm.newAccountDialogVisible = true
+      this.newAccountDialogVisible = true
     },
     // 新建、编辑账号提交
     newAccount (formName) {
