@@ -145,9 +145,9 @@
             <el-select v-model="cusmoterForm.level" placeholder="请选择">
               <el-option
                 v-for="item in customerLevelList"
-                :key="item"
-                :label="item"
-                :value="item">
+                :key="item.levelName"
+                :label="item.levelName"
+                :value="item.levelName">
               </el-option>
             </el-select>
           </el-form-item>
@@ -155,9 +155,9 @@
             <el-select v-model="cusmoterForm.industry" placeholder="请选择">
               <el-option
                 v-for="item in industryList"
-                :key="item"
-                :label="item"
-                :value="item">
+                :key="item.industryName"
+                :label="item.industryName"
+                :value="item.industryName">
               </el-option>
             </el-select>
           </el-form-item>
@@ -189,9 +189,9 @@
             <el-select v-model="cusmoterForm.chargeManId" filterable placeholder="请选择">
               <el-option
                 v-for="item in accountList"
-                :key="item.accountId"
+                :key="item.kcSalesId"
                 :label="item.realName"
-                :value="item.accountId">
+                :value="item.kcSalesId">
               </el-option>
             </el-select>
           </el-form-item>
@@ -229,7 +229,7 @@
 </template>
 
 <script>
-import { postAccountQuery, postCustomerQuery, postCommonLevel, postCommonIndustry, postCommonTag, postCommonTagAdd, postAccountList, postCommonCreate, postCustomEdit, postCustomDelete, postCustomBtachGroup } from '@/api/api'
+import { postAccountQuery, postCustomerQuery, postCommonLevel, postCommonIndustry, postCommonTag, postCommonTagAdd, postAccountAllList, postCommonCreate, postCustomEdit, postCustomDelete, postCustomBtachGroup } from '@/api/api'
 export default {
   data () {
     return {
@@ -311,28 +311,31 @@ export default {
   },
   created () {
     this.getCustomerList()
-    postAccountQuery().then(res => {
-      if (res.code === 0) {
+    postAccountQuery({}).then(res => {
+      if (res.code === 200) {
         this.groupArr = res.data.groups
       }
     })
-    postCommonLevel().then(res => {
-      if (res.code === 0) {
+    postCommonLevel({}).then(res => {
+      console.log(22)
+      if (res.code === 200) {
         this.customerLevelList = res.data.levels
       }
     })
-    postCommonIndustry().then(res => {
-      if (res.code === 0) {
+    postCommonIndustry({}).then(res => {
+      if (res.code === 200) {
         this.industryList = res.data.industries
       }
     })
-    postCommonTag().then(res => {
-      if (res.code === 0) {
-        this.tagList = res.data.tags
+    postCommonTag({}).then(res => {
+      if (res.code === 200) {
+        this.tagList = res.data.tags.map(e => {
+          return e.tagName
+        })
       }
     })
-    postAccountList().then(res => {
-      if (res.code === 0) {
+    postAccountAllList({}).then(res => {
+      if (res.code === 200) {
         this.accountList = res.data.accounts
       }
     })
@@ -353,8 +356,8 @@ export default {
     // 新建标签
     newTag () {
       if (this.addTag === '') return this.$message.warning('请输入标签名')
-      postCommonTagAdd().then(res => {
-        if (res.code === 0) {
+      postCommonTagAdd(this.addTag).then(res => {
+        if (res.code === 200) {
           this.tagList.push(this.addTag)
           this.$message.success('添加标签成功')
         }
@@ -375,7 +378,7 @@ export default {
         groupId: this.groupId
       }
       postCustomerQuery(params).then(res => {
-        if (res.code === 0) {
+        if (res.code === 200) {
           res.data.customs.forEach(e => {
             e.isDeleteCusmoter = false
           })
@@ -414,7 +417,7 @@ export default {
               chargeManId: this.cusmoterForm.chargeManId
             }
             postCommonCreate(params).then(res => {
-              if (res.code === 0) {
+              if (res.code === 200) {
                 this.$message.success('新建客户成功')
                 this.getCustomerList()
                 this.newCusmoterDialogVisible = false
@@ -433,7 +436,7 @@ export default {
               chargeManId: this.cusmoterForm.accountId
             }
             postCustomEdit(params).then(res => {
-              if (res.code === 0) {
+              if (res.code === 200) {
                 this.$message.success('修改客户成功')
                 this.getCustomerList()
                 this.newCusmoterDialogVisible = false
@@ -487,7 +490,7 @@ export default {
     // 删除客户气泡
     deleteCustomer (row) {
       postCustomDelete({ customIds: [row.customId] }).then(res => {
-        if (res.code === 0) {
+        if (res.code === 200) {
           this.$message.success('删除客户成功')
           this.getCustomerList()
           row.isDeleteCusmoter = false
@@ -504,7 +507,7 @@ export default {
         return e.customId
       })
       postCustomDelete(params).then(res => {
-        if (res.code === 0) {
+        if (res.code === 200) {
           this.$message.success('删除客户成功')
           this.getCustomerList()
           this.deleteDialogVisible = false
@@ -527,7 +530,7 @@ export default {
           chargeManId: this.distributionRuleForm.chargeManId
         }
         postCustomBtachGroup(params).then(res => {
-          if (res.code === 0) {
+          if (res.code === 200) {
             this.$message.success('分配成功')
             this.distributionCustomId = ''
             this.getCustomerList()
@@ -542,7 +545,7 @@ export default {
           chargeManId: this.distributionRuleForm.chargeManId
         }
         postCustomBtachGroup(params).then(res => {
-          if (res.code === 0) {
+          if (res.code === 200) {
             this.$message.success('分配成功')
             this.distributionCustomId = ''
             this.getCustomerList()

@@ -1,7 +1,7 @@
 import request from '@/utils/request'
 
 const login = (data) => {
-  return request.get('/analog-data/login.json', data)
+  return request.post('/v1/auth/login', data)
 }
 
 const dispatchList = (data) => {
@@ -10,12 +10,12 @@ const dispatchList = (data) => {
 
 // 发送验证码
 const sendCode = (data) => {
-  return request.get('/analog-data/send-code.json', data)
+  return request.post('/v1/account/send', data)
 }
 
 // 修改密码
 const editPassword = (data) => {
-  return request.get('/analog-data/edit-password.json', data)
+  return request.post('/v1/account/password/edit', data)
 }
 
 // 修改密码
@@ -25,7 +25,7 @@ const postTotalQuery = (data) => {
 
 // 查询分组列表
 const postAccountQuery = (data) => {
-  return request.get('/analog-data/account-query.json', data)
+  return request.post('/v1/account/group/query', data)
 }
 
 // 查询销售任务列表
@@ -45,87 +45,87 @@ const postTaskCreate = (data) => {
 
 // 新分组建
 const postCroupCreate = (data) => {
-  return request.get('/analog-data/group-create.json', data)
+  return request.post('/v1/account/group/create', data)
 }
 
 // 编辑分组
 const postCroupEdit = (data) => {
-  return request.get('/analog-data/group-edit.json', data)
+  return request.post('/v1/account/group/edit', data)
 }
 
 // 删除分组
 const postCroupDelete = (data) => {
-  return request.get('/analog-data/group-delete.json', data)
+  return request.post('/v1/account/group/delete', data)
 }
 
 // 新建账号
 const postAccountCreate = (data) => {
-  return request.get('/analog-data/account-create.json', data)
+  return request.post('/v1/account/create', data)
 }
 
 // 编辑账号
 const postAccountEdit = (data) => {
-  return request.get('/analog-data/account-edit.json', data)
+  return request.post('/v1/account/edit', data)
 }
 
 // 查询账号列表
-const postAccountList = (data) => {
-  return request.get('/analog-data/account-list.json', data)
+const postAccountList = (id) => {
+  return request.post(`/v1/account/group/list?groupId=${id}`)
 }
 
-// 查询账号列表
+// 删除账号列表
 const postAccountDelete = (data) => {
-  return request.get('/analog-data/account-delete.json', data)
+  return request.post('/v1/account/delete', data)
 }
 
 // 新建规则
 const postRuleCreate = (data) => {
-  return request.get('/analog-data/rule-create.json', data)
+  return request.get('/v1/rule/create', data)
 }
 
 // 获取规则列表
 const postRuleQuery = (data) => {
-  return request.get('/analog-data/rule-query.json', data)
+  return request.get('/v1/rule/query', data)
 }
 
-// 新建规则
+// 编辑规则
 const postRuleEdit = (data) => {
-  return request.get('/analog-data/rule-edit.json', data)
+  return request.get('/v1/rule/edit', data)
 }
 
 // 删除规则
 const postRuleDelete = (data) => {
-  return request.get('/analog-data/rule-delete.json', data)
+  return request.get('/v1/rule/delete', data)
 }
 
 // 查询客户列表
 const postCustomerQuery = (data) => {
-  return request.get('/analog-data/customer-query.json', data)
+  return request.post('/v1/customer/query', data)
 }
 
 // 查询客户分级
 const postCommonLevel = (data) => {
-  return request.get('/analog-data/common-level.json', data)
+  return request.post('/v1/common/level', data)
 }
 
 // 查询客户所属行业
 const postCommonIndustry = (data) => {
-  return request.get('/analog-data/common-industry.json', data)
+  return request.post('/v1/common/industry', data)
 }
 
 // 查询客户标签
 const postCommonTag = (data) => {
-  return request.get('/analog-data/common-tag.json', data)
+  return request.post('/v1/common/tag', data)
 }
 
 // 添加客户标签
-const postCommonTagAdd = (data) => {
-  return request.get('/analog-data/common-tag-add.json', data)
+const postCommonTagAdd = (name) => {
+  return request.post(`/v1/common/tag/add?tagName=${name}`)
 }
 
 // 新建客户
 const postCommonCreate = (data) => {
-  return request.get('/analog-data/common-create.json', data)
+  return request.post('/v1/customer/create', data)
 }
 
 // 编辑客户
@@ -141,6 +141,11 @@ const postCustomDelete = (data) => {
 // 批量分配(客户管理)
 const postCustomBtachGroup = (data) => {
   return request.get('/analog-data/custom-batch-group.json', data)
+}
+
+// 查询账户总列表
+const postAccountAllList = (data) => {
+  return request.post('/v1/account/list', data)
 }
 
 export {
@@ -172,5 +177,6 @@ export {
   postCommonCreate,
   postCustomEdit,
   postCustomDelete,
-  postCustomBtachGroup
+  postCustomBtachGroup,
+  postAccountAllList
 }

@@ -5,16 +5,29 @@
       <span></span>
       <span>Customer</span>
     </div>
-    <div class="user"></div>
+    <div class="user" @mouseleave="isUser = false" @mouseover="isUser = true">
+      <div class="user-icon"></div>
+      <div class="message" v-show="isUser">
+        <div>账号：{{ UserName }}</div>
+        <div>
+          <el-button size="small">退出登录</el-button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 <script>
+import { mapState } from "vuex"
 export default {
   data() {
     return {
       crumbList: [],
-      isFold: false
+      isFold: false,
+      isUser: false
     };
+  },
+  computed: {
+    ...mapState(["UserName"])
   },
   methods: {
     loginOut() {
@@ -70,9 +83,30 @@ export default {
   .user
     float right
     margin-right 48px
-    width 40px
-    height 40px
-    background url('../../../assets/images/user-icon.svg') no-repeat center
     margin-top 4px
-    cursor pointer
+    position relative
+
+.user-icon
+  width 40px
+  height 40px
+  width 40px
+  height 40px
+  cursor pointer
+  background url('../../../assets/images/user-icon.svg') no-repeat center
+
+.message
+  min-width 150px
+  height 80px
+  padding-top 20px
+  background-color #fff
+  position absolute
+  top 32px
+  right 10px
+  border-radius 5px
+  box-shadow 0px 4px 18px 0px rgba(0, 0, 0, 0.3)
+  > div:first-child
+    text-align center
+  > div:last-child
+    text-align center
+    margin-top 10px 
 </style>

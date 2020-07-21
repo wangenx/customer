@@ -1,14 +1,12 @@
 <template>
   <div class="login clearfix">
+    <div class="login-left"></div>
     <div class="login-main">
-      <div class="login-left">
-        <div class="left-icon"></div>
-      </div>
       <div class="login-con" v-show="isLogin">
         <div class="title">LOGIN</div>
         <el-form :model="loginFuleForm" :rules="loginRules" ref="loginFuleForm" class="demo-ruleForm">
-          <el-form-item prop="username">
-            <el-input v-model="loginFuleForm.username" placeholder="输入账号"></el-input>
+          <el-form-item prop="userName">
+            <el-input v-model="loginFuleForm.userName" placeholder="输入账号"></el-input>
           </el-form-item>
           <el-form-item prop="password">
             <el-input type="password" v-model="loginFuleForm.password" placeholder="输入密码"></el-input>
@@ -50,6 +48,7 @@
         <div class="go-login" @click="isLogin = true">返回登录</div>
       </div>
     </div>
+    
   </div>
 </template>
 <script>
@@ -87,7 +86,7 @@ export default {
     return {
       isSend: false,
       loginFuleForm: {
-        username: '',
+        userName: '',
         password: ''
       },
       ruleForm: {
@@ -97,7 +96,7 @@ export default {
         passwordAgin: ''
       },
       loginRules: {
-        username: [
+        userName: [
           { required: true, message: '请输入账号', trigger: 'blur' }
         ],
         password: [
@@ -128,7 +127,7 @@ export default {
       this.$refs[formName].validate((valid) => {
         if (valid) {
           this.$store.dispatch('Login', this.loginFuleForm).then(res => {
-            if (res.code === 0) {
+            if (res.code === 200) {
               this.$router.push('home')
             }
           })
@@ -148,7 +147,7 @@ export default {
             newPassword: this.ruleForm.newPassword
           }
           editPassword(params).then(res => {
-            if (res.code === 0) {
+            if (res.code === 200) {
               this.$message.success('修改密码成功')
               this.isLogin = true
               this.$refs[formName].resetFields()
@@ -188,45 +187,16 @@ export default {
 <style lang="stylus" scoped>
 .login
   height 100vh
-  padding-top 80px
-  // background url('../../assets/images/login-bg.png') no-repeat
-  // background-size 100% 100%
   background-color #fff
-  .login-main
-    width 952px
-    // padding-top 80px
-    height 580px
-    margin 0 auto
-    // margin-left 340px
-    // background-color #fff
-    // border-radius 10px
-    box-shadow 0px 4px 18px 0px rgba(0, 0, 0, 0.3)
 
-// @media screen and (min-height: 789px)
-//   .login
-//     .login-main
-//       margin-left 300px
-
-// @media (min-height: 789px) and (max-height 889px)
-//   .login
-//     .login-main
-//       margin-left 340px
-
-// @media (min-height 890px) and (max-height 989px)
-//   .login
-//     .login-main
-//       margin-left 460px
-
-// @media (min-height 990px) and (max-height 1089px)
-//   .login
-//     .login-main
-//       margin-left 540px
+.login-main
+  width calc(100% - 66.66%)
+  height 100%
+  float right
 
 .login-con
-  width calc(50% - 48px)
-  float right
-  padding-top 84px
-  padding-left 48px
+  width 344px
+  margin 25.57% auto 0
   .title
     width 344px
     font-size 48px
@@ -289,8 +259,8 @@ export default {
   .send-code
     position absolute
     width 130px
-    right 74px
-    top 220px
+    right 12px
+    top 136px
     span
       float left
     > span:first-child
@@ -307,17 +277,13 @@ export default {
     > span:last-child
       color #ff4441
   .send-after
-    right 94px     
+    right 12px
 
 .login-left
-  width 50%
+  width 66.66%
   height 100%
   float left
-  background-color #AACCFF
-  .left-icon
-    margin-left 38px
-    padding-top 38px
-    width 67px
-    height 290px
-    background url('../../assets/images/login-left-icon.svg') no-repeat
+  background url('../../assets/images/login-bg.png') no-repeat
+  background-size 100% 100%
+  
 </style>
