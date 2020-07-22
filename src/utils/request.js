@@ -36,6 +36,7 @@ service.interceptors.response.use(
         type: 'error',
         duration: 5 * 1000
       })
+      return response.data
       // store.dispatch('webLoginOut').then(() => {
       //   router.push('/')
       // })

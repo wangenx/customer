@@ -28,7 +28,7 @@
             <el-button size="small" type="primary" @click="getList()">查询</el-button>
           </div>
           <div class="right">
-            <el-select v-model="searchData.groupId" size="small" placeholder="请选择分组">
+            <el-select v-model="searchData.groupId" size="small" placeholder="选择分组">
               <el-option
                 v-for="item in accountQuery"
                 :key="item.groupId"
@@ -246,13 +246,13 @@ export default {
   created () {
     this.totalQueryData()
     this.getList()
-    postAccountQuery().then(res => {
-      if (res.code === 0) {
+    postAccountQuery({}).then(res => {
+      if (res.code === 200) {
         this.accountQuery = res.data.groups
       }
     })
     postTaskExpiration().then(res => {
-      if (res.code === 0) {
+      if (res.code === 200) {
         this.taskExpirationNum =  res.data.totalCount
       }
     })
@@ -269,7 +269,7 @@ export default {
             expirationNum: this.form.expirationNum
           }
           postTaskCreate(params).then(res => {
-            if (res.code === 0) {
+            if (res.code === 200) {
               this.$message.success('派单成功')
               this.dialogShow = false
             }
@@ -318,14 +318,15 @@ export default {
         pageSize: this.pagination.pageSize
       }
       dispatchList(params).then(res => {
-        if (res.code === 0) {
+        if (res.code === 200) {
           this.tableData = res.data.personTasks
           this.pagination.total = Number(res.totalCount)
         }
       })
     },
     handleSizeChange(val) {
-      console.log(`每页 ${val} 条`);
+      this.pagination.pageSize = val
+      this.getList()
     },
     handleCurrentChange(val) {
       this.pagination.page = val
@@ -334,7 +335,7 @@ export default {
     // 获取额度
     totalQueryData () {
       postTotalQuery().then(res => {
-        if (res.code === 0) {
+        if (res.code === 200) {
           this.totalQuery = res.data
         }
       })

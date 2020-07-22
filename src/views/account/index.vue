@@ -13,6 +13,7 @@
             :value="item.groupId">
           </el-option>
         </el-select>
+        <el-button size="small" @click="getGroupList()" type="primary">查询</el-button>
         <el-input v-model="form.key" size="small" placeholder="请输入分组名"></el-input>
         <el-button size="small" @click="getGroupList()" type="primary">查询</el-button>
       </div>
@@ -131,7 +132,7 @@
         </el-table-column>
       </el-table>
     </div>
-    <div class="page">
+    <div class="page clearfix" style="padding-bottom: 40px;">
       <div class="select-all">
         <el-checkbox size="small" v-model="selectAll" @change="handleSelectionChangeCheckbox" label="全选" border></el-checkbox>
         <el-button size="small" @click="deleteAllGroup">删除分组</el-button>
@@ -335,13 +336,17 @@ export default {
   },
   created () {
     this.getGroupList()
-    postAccountQuery({}).then(res => {
-      if (res.code === 200) {
-        this.groupArr = res.data.groups
-      }
-    })
+    this.getGroupAllList()
   },
   methods: {
+    // 获取全部分组
+    getGroupAllList () {
+      postAccountQuery({}).then(res => {
+        if (res.code === 200) {
+          this.groupArr = res.data.groups
+        }
+      })
+    },
     // 点击搜索按钮
     searchList () {
       this.pagination.page = 1
@@ -417,6 +422,7 @@ export default {
     // 全选分组
     handleSelectionChange(val) {
       this.deleteArrGroup = val
+      this.deleteArrGroup.length === this.tableData.length ? this.selectAll = true : this.selectAll = false
     },
     handleSelectionChangeCheckbox () {
       if (this.selectAll) {
@@ -445,6 +451,7 @@ export default {
         if (res.code === 200) {
           this.$message.success('删除分组成功')
           this.getGroupList()
+          this.getGroupAllList()
           this.deleteDialogVisible = false
           this.selectAll = false
           this.deleteArrGroup = []
@@ -468,6 +475,7 @@ export default {
         if (res.code === 200) {
           this.$message.success('删除分组成功')
           this.getGroupList()
+          this.getGroupAllList()
           row.isDelete = false
         }
       })
@@ -526,6 +534,7 @@ export default {
               if (res.code === 200) {
                 this.$message.success('编辑分组成功')
                 this.getGroupList()
+                this.getGroupAllList()
                 this.newGroupingDialogVisible = false
                 this.$refs[formName].resetFields()
               }
@@ -539,6 +548,7 @@ export default {
               if (res.code === 200) {
                 this.$message.success('新建分组成功')
                 this.getGroupList()
+                this.getGroupAllList()
                 this.newGroupingDialogVisible = false
                 this.$refs[formName].resetFields()
               }
@@ -642,13 +652,15 @@ export default {
   .search
     float left
     /deep/ .el-select
-      width 104px
+      width 272px
       margin-right 10px
       .el-input
         width 100%
     /deep/ .el-input
       width 272px
       margin-right 16px
+    /deep/ .el-button
+      margin-right 40px  
   .operation
     float right
     /deep/ i

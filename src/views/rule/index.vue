@@ -15,6 +15,7 @@
     <div class="tabel">
       <el-table
         ref="multipleTable"
+        v-loading="ruleLoading"
         :data="tableData"
         tooltip-effect="dark"
         style="width: 100%"
@@ -68,7 +69,7 @@
         </el-table-column>
       </el-table>
     </div>
-    <div class="page">
+    <div class="page clearfix" style="padding-bottom: 40px;">
       <div class="select-all">
         <el-checkbox size="small" v-model="selectAll" @change="selectRules" label="全选" border></el-checkbox>
         <el-button size="small" @click="DeleteRules">删除</el-button>
@@ -322,13 +323,14 @@ export default {
           value: '澳门',
           label: '澳门'
         }
-      ]
+      ],
+      ruleLoading: false
     }
   },
   created () {
     this.getRuleList()
-    postAccountQuery().then(res => {
-      if (res.code === 0) {
+    postAccountQuery({}).then(res => {
+      if (res.code === 200) {
         this.groupArr = res.data.groups
       }
     })
@@ -347,13 +349,17 @@ export default {
         pageSize: this.pagination.pageSize,
         pageNo: this.pagination.page
       }
+      this.ruleLoading = true
       postRuleQuery(params).then(res => {
-        if (res.code === 0) {
+        if (res.code === 200) {
           res.data.rules.forEach(e => {
             e.isDeleteRule = false
           })
           this.tableData = res.data.rules
           this.pagination.total = Number(res.data.totalCount)
+          this.ruleLoading = false
+        } else {
+          this.ruleLoading = false
         }
       })
     },
@@ -401,8 +407,9 @@ export default {
               conditions: this.ruleForm.conditions
             }
             postRuleCreate(params).then(res => {
-              if (res.code === 0) {
+              if (res.code === 200) {
                 this.$message.success('新建规则成功')
+                this.getRuleList()
                 this.newRuleDialogVisible = false
               }
             })
@@ -414,7 +421,7 @@ export default {
               conditions: this.ruleForm.conditions
             }
             postRuleEdit(params).then(res => {
-              if (res.code === 0) {
+              if (res.code === 200) {
                 this.$message.success('修改规则成功')
                 this.newRuleDialogVisible = false
               }
@@ -430,7 +437,7 @@ export default {
     editRule (row) {
       this.ruleForm.ruleId = row.ruleId
       this.ruleForm.ruleName = row.ruleName
-      this.ruleForm.chargeGroupId = row.chargeGroupId
+      this.ruleForm.chargeGroupId = row.groupId
       let conditions = JSON.stringify(row.conditions)
       this.ruleForm.conditions = JSON.parse(conditions)
       this.newRuleDialogVisible = true
@@ -440,6 +447,7 @@ export default {
     // 表格全选按钮
     handleSelectionChange (val) {
       this.deleteRuleArr = val
+      this.deleteRuleArr.length === this.tableData.length ? this.selectAll = true : this.selectAll = false
     },
     // 关闭删除弹窗
     handleClosDelete () {
@@ -460,8 +468,8 @@ export default {
     },
     // 删除规则气泡
     deleteRule (row) {
-      postRuleDelete({ ruleIds: [row.ruleId] }).then(res => {
-        if (res.code === 0) {
+      postRuleDelete([row.ruleId]).then(res => {
+        if (res.code === 200) {
           this.$message.success('删除规则成功')
           this.getRuleList()
         }
@@ -486,9 +494,11 @@ export default {
           return e.ruleId
         })
         postRuleDelete(params).then(res => {
-          if (res.code === 0) {
+          if (res.code === 200) {
             this.$message.success('删除规则成功')
             this.getRuleList()
+            this.selectAll = false
+            this.deleteRuleArr = []
           }
         })
       } else {

@@ -98,8 +98,8 @@ export default {
 
 .message
   min-width 150px
-  height 80px
-  padding-top 20px
+  min-height 80px
+  padding 10px
   background-color #fff
   position absolute
   top 32px

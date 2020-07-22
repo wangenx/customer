@@ -18,13 +18,14 @@
       </div>
       <div class="operation">
         <el-button size="small" type="primary" @click="addCusmoter"><i class="el-icon-plus"></i>新建客户</el-button>
-        <el-button size="small" type="primary" @click="search"><i class="el-icon-refresh"></i></el-button>
+        <el-button size="small" type="primary" @click="search(1)"><i class="el-icon-refresh"></i></el-button>
       </div>
     </div>
     <div class="tabel">
       <el-table
         ref="multipleTable"
         :data="tableData"
+        v-loading="customerLoading"
         tooltip-effect="dark"
         style="width: 100%"
         @selection-change="handleSelectionChange">
@@ -33,23 +34,22 @@
           width="55">
         </el-table-column>
         <el-table-column
-          prop="classification"
-          label="客户分级">
-          <template slot-scope="scope">{{ scope.row.level }}</template>
+          prop="customerName"
+          label="客户姓名"
+          show-overflow-tooltip>
         </el-table-column>
         <el-table-column
-          prop="phone"
+          label="客户分级">
+          <template slot-scope="scope">{{ scope.row.customerLevel }}</template>
+        </el-table-column>
+        <el-table-column
+          prop="customerPhone"
           label="手机号"
           show-overflow-tooltip>
         </el-table-column>
         <el-table-column
-          prop="industry"
+          prop="customerIndustry"
           label="所属行业"
-          show-overflow-tooltip>
-        </el-table-column>
-        <el-table-column
-          prop="customName"
-          label="客户姓名"
           show-overflow-tooltip>
         </el-table-column>
         <el-table-column
@@ -58,25 +58,22 @@
           show-overflow-tooltip>
         </el-table-column>
         <el-table-column
-          prop="customPost"
+          prop="customerPost"
           label="客户职位"
           show-overflow-tooltip>
         </el-table-column>
         <el-table-column
-          prop="customTag"
+          prop="customerTagList"
           label="客户标签"
           min-width="258">
           <template slot-scope="scope">
-            <!-- <span class="tag">
-              
-            </span> -->
             <span class="tag">
-              <el-tag size="small" type="info" v-for="(item, index) in scope.row.customTag" :key="index">{{ item }}</el-tag>
+              <el-tag size="small" type="info" v-for="(item, index) in scope.row.customerTagList" :key="index">{{ item }}</el-tag>
             </span>
           </template>
         </el-table-column>
         <el-table-column
-          prop="chargeMan"
+          prop="managerName"
           label="所属人"
           show-overflow-tooltip>
         </el-table-column>
@@ -85,7 +82,7 @@
           width="220">
           <template slot-scope="scope">
             <div class="operation clearfix">
-              <span @click="distribution(scope.row.customId)">分配</span>
+              <span @click="distribution(scope.row)">分配</span>
               <span></span>
               <span @click="editCusmoter(scope.row)">修改</span>
               <span></span>
@@ -105,13 +102,14 @@
         </el-table-column>
       </el-table>
     </div>
-    <div class="page">
+    <div class="page clearfix" style="padding-bottom: 40px;">
       <div class="select-all">
         <el-checkbox size="small" v-model="selectAll" @change="selectAllList" label="全选" border></el-checkbox>
         <el-button size="small" @click="distributionAll">批量分配</el-button>
         <el-button size="small" @click="deleteAllDialog">批量删除</el-button>
       </div>
       <el-pagination
+        v-show="pagination.total > pagination.pageSize"
         background
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
@@ -141,6 +139,9 @@
         :before-close="handleClose">
         <div class="dialog-line"></div>
         <el-form :model="cusmoterForm" :rules="rules" v-if="newCusmoterDialogVisible" size="small" ref="cusmoterForm" label-width="100px" label-position="top" class="demo-ruleForm">
+          <el-form-item label="客户姓名" prop="customName">
+            <el-input v-model="cusmoterForm.customName" placeholder="请输入客户姓名"></el-input>
+          </el-form-item>
           <el-form-item label="客户分级" prop="level">
             <el-select v-model="cusmoterForm.level" placeholder="请选择">
               <el-option
@@ -161,9 +162,6 @@
               </el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="客户姓名" prop="customName">
-            <el-input v-model="cusmoterForm.customName" placeholder="请输入客户姓名"></el-input>
-          </el-form-item>
           <el-form-item label="手机号" prop="customPhone">
             <el-input v-model="cusmoterForm.customPhone" placeholder="请输入手机号"></el-input>
           </el-form-item>
@@ -173,7 +171,7 @@
           <el-form-item label="客户职位" prop="customPost">
             <el-input v-model="cusmoterForm.customPost"></el-input>
           </el-form-item>
-          <el-form-item label="客户标签" prop="customTags">
+          <el-form-item label="客户标签">
             <div class="tag-arr">
               <el-checkbox-group v-model="cusmoterForm.customTags" size="small">
                 <el-checkbox size="small" v-for="tag in tagList" :label="tag" :key="tag">{{ tag }}<i class="el-icon-check"></i></el-checkbox>
@@ -185,7 +183,7 @@
               </div>
             </div>
           </el-form-item>
-          <el-form-item label="所属人" prop="chargeManId">
+          <el-form-item label="所属人" v-if="cusmoterFormTitle === '新建客户'">
             <el-select v-model="cusmoterForm.chargeManId" filterable placeholder="请选择">
               <el-option
                 v-for="item in accountList"
@@ -212,9 +210,9 @@
             <el-select v-model="distributionRuleForm.chargeManId" filterable placeholder="请选择">
               <el-option
                 v-for="item in accountList"
-                :key="item.accountId"
+                :key="item.kcSalesId"
                 :label="item.realName"
-                :value="item.accountId">
+                :value="item.kcSalesId">
               </el-option>
             </el-select>
           </el-form-item>
@@ -306,7 +304,8 @@ export default {
       tagList: [],
       accountList: [],
       deleteCustomerArr: [],
-      distributionCustomId: ''
+      distributionCustomId: '',
+      customerLoading: false
     }
   },
   created () {
@@ -317,7 +316,6 @@ export default {
       }
     })
     postCommonLevel({}).then(res => {
-      console.log(22)
       if (res.code === 200) {
         this.customerLevelList = res.data.levels
       }
@@ -364,7 +362,11 @@ export default {
       })
     },
     // 点击查询按钮
-    search () {
+    search (num) {
+      if (num === 1) {
+        this.key = '',
+        this.groupId = ''
+      }
       this.pagination.page = 1
       this.pagination.pageSize = 10
       this.getCustomerList()
@@ -377,13 +379,24 @@ export default {
         pageSize: this.pagination.pageSize,
         groupId: this.groupId
       }
+      this.customerLoading = true
       postCustomerQuery(params).then(res => {
         if (res.code === 200) {
-          res.data.customs.forEach(e => {
-            e.isDeleteCusmoter = false
-          })
-          this.tableData = res.data.customs
-          this.pagination.total = Number(res.data.totalCount)
+          if (res.data.customs !== null) {
+            res.data.customs.forEach(e => {
+              e.isDeleteCusmoter = false
+              if (e.customerTagList[0] === '') {
+                e.customerTagList = []
+              }
+            })
+            this.tableData = res.data.customs
+            this.pagination.total = Number(res.data.totalCount)
+          } else {
+            this.tableData = []
+          }
+          this.customerLoading = false
+        } else {
+          this.customerLoading = false
         }
       })
     },
@@ -397,6 +410,8 @@ export default {
       this.cusmoterForm.customPost = ''
       this.cusmoterForm.customTags = []
       this.cusmoterForm.chargeManId = ''
+      this.isAdd = false
+      this.addTag = ''
       this.newCusmoterDialogVisible = true
       this.cusmoterFormTitle = '新建客户',
       this.butoonText = '添加'
@@ -425,7 +440,8 @@ export default {
             })
           } else if (this.cusmoterFormTitle === '修改客户') {
             const params = {
-              customId: this.cusmoterForm.customId,
+              customerId: this.cusmoterForm.customerId,
+              chargeManId:this.cusmoterForm.chargeManId,
               level: this.cusmoterForm.level,
               industry: this.cusmoterForm.industry,
               customName: this.cusmoterForm.customName,
@@ -433,7 +449,6 @@ export default {
               customPhone: this.cusmoterForm.customPhone,
               customPost: this.cusmoterForm.customPost,
               customTags: this.cusmoterForm.customTags,
-              chargeManId: this.cusmoterForm.accountId
             }
             postCustomEdit(params).then(res => {
               if (res.code === 200) {
@@ -450,21 +465,24 @@ export default {
       });
     },
     editCusmoter (row) {
-      this.cusmoterForm.customId = row.customId
-      this.cusmoterForm.level = row.level
-      this.cusmoterForm.industry = row.industry
-      this.cusmoterForm.customName = row.customName
+      this.cusmoterForm.customerId = row.customerId
+      this.cusmoterForm.chargeManId = row.managerId
+      this.cusmoterForm.level = row.customerLevel
+      this.cusmoterForm.industry = row.customerIndustry
+      this.cusmoterForm.customName = row.customerName
       this.cusmoterForm.companyName = row.companyName
-      this.cusmoterForm.customPhone = row.customPhone
-      this.cusmoterForm.customPost = row.customPost
-      this.cusmoterForm.customTags = row.customTag
-      this.cusmoterForm.chargeManId = row.chargeManId
+      this.cusmoterForm.customPhone = row.customerPhone
+      this.cusmoterForm.customPost = row.customerPost
+      this.cusmoterForm.customTags = row.customerTagList
+      this.isAdd = false
+      this.addTag = ''
       this.newCusmoterDialogVisible = true
       this.cusmoterFormTitle = '修改客户'
       this.butoonText = '提交'
     },
     handleSelectionChange (val) {
-      this.multipleSelection = val
+      this.deleteCustomerArr = val
+      this.deleteCustomerArr.length === this.tableData.length ? this.selectAll = true : this.selectAll = false
     },
     // 关闭分配弹窗
     handleClosDistribution () {
@@ -489,7 +507,8 @@ export default {
     },
     // 删除客户气泡
     deleteCustomer (row) {
-      postCustomDelete({ customIds: [row.customId] }).then(res => {
+      const params = [row.customerId]
+      postCustomDelete(params).then(res => {
         if (res.code === 200) {
           this.$message.success('删除客户成功')
           this.getCustomerList()
@@ -504,20 +523,22 @@ export default {
     },
     deleteCustomerAll () {
       const params = this.deleteCustomerArr.map(e => {
-        return e.customId
+        return e.customerId
       })
       postCustomDelete(params).then(res => {
         if (res.code === 200) {
           this.$message.success('删除客户成功')
           this.getCustomerList()
           this.deleteDialogVisible = false
+          this.selectAll = false
+          this.deleteCustomerArr = []
         }
       })
     },
     // 分配
-    distribution (id) {
+    distribution (row) {
       this.distributionDialogVisible = true
-      this.distributionCustomId = id
+      this.distributionCustomId = row.customerId
     },
     distributionAll () {
       if (this.deleteCustomerArr.length === 0) return this.$message.warning('请选择客户')
@@ -540,7 +561,7 @@ export default {
       } else {
         const params = {
           customIds: this.deleteCustomerArr.map(e => {
-            return e.customId
+            return e.customerId
           }),
           chargeManId: this.distributionRuleForm.chargeManId
         }
@@ -550,6 +571,8 @@ export default {
             this.distributionCustomId = ''
             this.getCustomerList()
             this.distributionDialogVisible = false
+            this.selectAll = false
+            this.deleteCustomerArr = []
           }
         })
       }

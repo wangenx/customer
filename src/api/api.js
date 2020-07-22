@@ -5,7 +5,7 @@ const login = (data) => {
 }
 
 const dispatchList = (data) => {
-  return request.get('/analog-data/dispatch-list.json', data)
+  return request.post('/v1/task/person/query', data)
 }
 
 // 发送验证码
@@ -18,9 +18,9 @@ const editPassword = (data) => {
   return request.post('/v1/account/password/edit', data)
 }
 
-// 修改密码
+// 查询账户额度
 const postTotalQuery = (data) => {
-  return request.get('/analog-data/total-query.json', data)
+  return request.post('/v1/admin/total/query', data)
 }
 
 // 查询分组列表
@@ -33,9 +33,9 @@ const postTaskQuery = (data) => {
   return request.get('/analog-data/task-query.json', data)
 }
 
-// 查询销售任务列表
+// 过期任务总条数
 const postTaskExpiration = (data) => {
-  return request.get('/analog-data/task-expiration.json', data)
+  return request.post('/v1/task/expiration', data)
 }
 
 // 派单
@@ -80,22 +80,22 @@ const postAccountDelete = (data) => {
 
 // 新建规则
 const postRuleCreate = (data) => {
-  return request.get('/v1/rule/create', data)
+  return request.post('/v1/rule/create', data)
 }
 
 // 获取规则列表
 const postRuleQuery = (data) => {
-  return request.get('/v1/rule/query', data)
+  return request.post('/v1/rule/query', data)
 }
 
 // 编辑规则
 const postRuleEdit = (data) => {
-  return request.get('/v1/rule/edit', data)
+  return request.post('/v1/rule/edit', data)
 }
 
 // 删除规则
 const postRuleDelete = (data) => {
-  return request.get('/v1/rule/delete', data)
+  return request.post('/v1/rule/delete', data)
 }
 
 // 查询客户列表
@@ -130,17 +130,17 @@ const postCommonCreate = (data) => {
 
 // 编辑客户
 const postCustomEdit = (data) => {
-  return request.get('/analog-data/custom-edit.json', data)
+  return request.post('/v1/customer/edit', data)
 }
 
 // 删除客户
 const postCustomDelete = (data) => {
-  return request.get('/analog-data/custom-delete.json', data)
+  return request.post('/v1/customer/delete', data)
 }
 
 // 批量分配(客户管理)
 const postCustomBtachGroup = (data) => {
-  return request.get('/analog-data/custom-batch-group.json', data)
+  return request.post('/v1/customer/change', data)
 }
 
 // 查询账户总列表
