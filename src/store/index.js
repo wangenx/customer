@@ -55,7 +55,6 @@ export default new Vuex.Store({
         login(data)
           .then(res => {
             if (res.code === 200) {
-              console.log(res)
               commit("LOGIN_IN", res.data.jwtToken);
               commit("SET_NAME", res.data.sysUser.realName);
               resolve(res);
@@ -69,7 +68,7 @@ export default new Vuex.Store({
       }).catch(e => {
         console.log(e)
       });
-    }
+    },
     // 退出登录
     // LoginOut({ commit }) {
     //   return new Promise((resolve, reject) => {
@@ -87,13 +86,13 @@ export default new Vuex.Store({
     //       });
     //   });
     // },
-    // // 前端登出
-    // webLoginOut({ commit }) {
-    //   return new Promise(resolve => {
-    //     commit("LOGIN_OUT");
-    //     resolve();
-    //   });
-    // }
+    // 前端登出
+    webLoginOut({ commit }) {
+      return new Promise(resolve => {
+        commit("LOGIN_OUT");
+        resolve();
+      });
+    }
   },
   modules: {}
 });

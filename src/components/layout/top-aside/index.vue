@@ -10,7 +10,7 @@
       <div class="message" v-show="isUser">
         <div>账号：{{ UserName }}</div>
         <div>
-          <el-button size="small">退出登录</el-button>
+          <el-button @click="loginOut" size="small">退出登录</el-button>
         </div>
       </div>
     </div>
@@ -31,7 +31,9 @@ export default {
   },
   methods: {
     loginOut() {
-      // 退出登录
+      this.$store.dispatch('webLoginOut').then(() => {
+        this.$router.push({ name: 'Login' })
+      })
     },
     foldNav () {
       this.isFold ? this.isFold = false : this.isFold = true
