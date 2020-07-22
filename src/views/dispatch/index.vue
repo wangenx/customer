@@ -36,14 +36,6 @@
                 :value="item.groupId">
               </el-option>
             </el-select>
-            <el-select v-model="searchData.taskId" size="small" placeholder="请选择任务">
-              <el-option
-                v-for="item in taskList"
-                :key="item.taskId"
-                :label="item.taskName"
-                :value="item.taskId">
-              </el-option>
-            </el-select>
             <el-radio-group v-model="searchData.dateType" @change="searchData.date = []" size="small">
               <el-radio-button label="1">本日</el-radio-button>
               <el-radio-button label="2">本月</el-radio-button>
@@ -180,7 +172,7 @@
 </template>
 
 <script>
-import { dispatchList, postTotalQuery, postAccountQuery, postTaskQuery, postTaskExpiration, postTaskCreate, postAccountList } from '@/api/api'
+import { dispatchList, postTotalQuery, postAccountQuery, postTaskExpiration, postTaskCreate, postAccountList } from '@/api/api'
 export default {
   data () {
     var validatePurchaseNum = (rule, value, callback) => {
@@ -218,7 +210,6 @@ export default {
       searchData: {
         key: '',
         groupId: '',
-        taskId: '',
         dateType: '',
         pageNo: '',
         date: [],
@@ -226,7 +217,6 @@ export default {
         sortType: ''
       },
       accountQuery: [], // 分组list
-      taskList: [], // 任务list
       tableData: [],
       pagination: {
         page: 1,
@@ -259,11 +249,6 @@ export default {
     postAccountQuery().then(res => {
       if (res.code === 0) {
         this.accountQuery = res.data.groups
-      }
-    })
-    postTaskQuery().then(res => {
-      if (res.code === 0) {
-        this.taskList = res.data.subTasks
       }
     })
     postTaskExpiration().then(res => {
@@ -324,7 +309,6 @@ export default {
       const params = {
         key: this.searchData.key,
         groupId: this.searchData.groupId,
-        taskId: this.searchData.taskId,
         dateType: this.searchData.dateType,
         beginTime: this.searchData.date[0],
         endTime: this.searchData.date[1],
