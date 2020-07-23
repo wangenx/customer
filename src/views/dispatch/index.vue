@@ -46,7 +46,7 @@
               type="daterange"
               range-separator="-"
               size="small"
-              value-format="yy-MM-dd"
+              value-format="yyyy-MM-dd"
               start-placeholder="开始日期"
               end-placeholder="结束日期">
             </el-date-picker>
@@ -55,11 +55,12 @@
         <div class="tabel">
           <el-table
             :data="tableData"
+            v-loading="subTasksLoading"
             @sort-change="sort"
             :default-sort = "{prop: 'date', order: 'descending'}"
             style="width: 100%">
             <el-table-column
-              prop="userName"
+              prop="realName"
               label="账户名">
             </el-table-column>
             <el-table-column
@@ -108,6 +109,7 @@
         </div>
         <div class="page">
           <el-pagination
+            v-show="pagination.total > pagination.pageSize"
             background
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
@@ -124,6 +126,9 @@
       <div class="dialog-main">
         <div class="dialog-top"></div>
         <el-form :model="form" :rules="rules" ref="ruleForm" label-width="140px" class="demo-ruleForm">
+          <el-form-item label="任务名：" prop="taskName">
+            <el-input v-model="form.taskName" size="small" placeholder="请输入任务名"></el-input>
+          </el-form-item>
           <el-form-item label="指派给：" prop="groupId">
             <el-select v-model="form.groupId" @change="changeGroup" size="small" placeholder="请选择分组">
               <el-option
@@ -142,7 +147,7 @@
               v-model="form.expirationDate"
               type="date"
               size="small"
-              value-format="yy-MM-dd"
+              value-format="yyyy-MM-dd"
               placeholder="选择日期">
             </el-date-picker>
           </el-form-item>
@@ -163,7 +168,7 @@
             </div>
           </div>
         </div>
-        <div class="save" @click="taskSubmit('ruleForm')">派单</div>
+        <div class="save" v-loading="subMitLoading" @click="taskSubmit('ruleForm')">派单</div>
         <div class="number-tips">{{ totalQuery.perCastMoney }}/条</div>
         <div class="overtime-recovery">现有剩余{{ taskExpirationNum }}条</div>
       </div>
@@ -178,6 +183,8 @@ export default {
     var validatePurchaseNum = (rule, value, callback) => {
       if (value === '') {
         callback(new Error('请输入购买条数'))
+      } else if (Number(value) > 3000) {
+        callback(new Error('购买条数不能大于3000'))
       } else {
         callback()
       }
@@ -201,6 +208,15 @@ export default {
     var validateExpirationNum = (rule, value, callback) => {
       if (value === '') {
         callback(new Error('请输入超时回收条数'))
+      } else if (Number(value) > this.taskExpirationNum) {
+        callback(new Error('超时回收条数不能大于剩余条数'))
+      } else {
+        callback()
+      }
+    }
+    var validateTaskName = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('请输入任务名'))
       } else {
         callback()
       }
@@ -227,20 +243,24 @@ export default {
         groupId: '',
         purchaseNum: '',
         expirationDate: '',
-        expirationNum: ''
+        expirationNum: '',
+        taskName: ''
       },
       rules: {
         groupId: [{ validator: validateGroupId, trigger: 'change' }],
         purchaseNum: [{  validator: validatePurchaseNum, trigger: 'blur' }],
         expirationDate: [{validator: validateExpirationDate, trigger: 'change' }],
-        expirationNum: [{ validator: validateExpirationNum, trigger: 'blur' }]
+        expirationNum: [{ validator: validateExpirationNum, trigger: 'blur' }],
+        taskName: [{ validator: validateTaskName, trigger: 'blur' }]
       },
       dialogShow: false,
       taskExpirationNum: 0,
       isCalculation: true,
       totalNum: 0,
       accountList: 0,
-      pieces: 0
+      pieces: 0,
+      subTasksLoading: false,
+      subMitLoading: false
     }
   },
   created () {
@@ -266,12 +286,17 @@ export default {
             groupId: this.form.groupId,
             purchaseNum: this.form.purchaseNum,
             expirationDate: this.form.expirationDate,
-            expirationNum: this.form.expirationNum
+            expirationNum: this.form.expirationNum,
+            taskName: this.form.taskName
           }
+          this.subMitLoading = true
           postTaskCreate(params).then(res => {
             if (res.code === 200) {
               this.$message.success('派单成功')
               this.dialogShow = false
+              this.subMitLoading = false
+            } else {
+              this.subMitLoading = false
             }
           })
         } else {
@@ -283,8 +308,11 @@ export default {
     },
     // 获取组人员数量
     changeGroup () {
-      postAccountList({ groupId: this.form.groupId }).then(res => {
-        if (res.code === 0) {
+      postAccountList(this.form.groupId).then(res => {
+        if (res.code === 400001) {
+          this.form.groupId = ''
+          this.$message.warning('该分组下无账号')
+        } else if (res.code === 200) {
           this.accountList = res.data.accounts.length
         }
       })
@@ -293,7 +321,7 @@ export default {
     changePurchaseNum () {
       if (this.form.purchaseNum !== '' && this.form.expirationNum !== '' && this.form.groupId !== '') {
         this.totalNum = ((this.form.purchaseNum - this.form.expirationNum) * this.totalQuery.perCastMoney).toFixed(2)
-        this.pieces = ((this.form.purchaseNum - this.form.expirationNum) / this.accountList).toFixed()
+        this.pieces = ((Number(this.form.purchaseNum) - Number(this.form.expirationNum)) / Number(this.accountList)).toFixed()
         this.isCalculation = false
       } else {
         this.isCalculation = true
@@ -302,7 +330,7 @@ export default {
     // 排序
     sort(row) {
       this.searchData.sortStr = row.prop
-      this.searchData.sortType = row.order
+      row.order === 'descending' ? this.searchData.sortType = 'desc' : this.searchData.sortType = 'asc'
       this.getList()
     },
     getList () {
@@ -310,17 +338,21 @@ export default {
         key: this.searchData.key,
         groupId: this.searchData.groupId,
         dateType: this.searchData.dateType,
-        beginTime: this.searchData.date[0],
-        endTime: this.searchData.date[1],
+        beginTime: this.searchData.date.length > 0 ? this.searchData.date[0] : '',
+        endTime: this.searchData.date.length > 0 ? this.searchData.date[1] : '',
         sortStr: this.searchData.sortStr,
         sortType: this.searchData.sortType,
         pageNo: this.pagination.page,
         pageSize: this.pagination.pageSize
       }
+      this.subTasksLoading = true
       dispatchList(params).then(res => {
         if (res.code === 200) {
-          this.tableData = res.data.personTasks
-          this.pagination.total = Number(res.totalCount)
+          this.tableData = res.data.subTasks
+          this.pagination.total = Number(res.data.totalCount)
+          this.subTasksLoading = false
+        } else {
+          this.subTasksLoading = false
         }
       })
     },
@@ -483,7 +515,7 @@ export default {
     opacity 0.5
   .dialog-main
     width 432px
-    height 300px
+    height 360px
     padding-top 130px
     position absolute
     top calc(50% - 202px)
@@ -528,7 +560,7 @@ export default {
     > .number-tips
       position absolute
       left 312px
-      bottom 218px
+      bottom 224px
       color #ff0000
       font-size 14px
       line-height 20px
@@ -537,7 +569,7 @@ export default {
       font-size 14px
       line-height 20px
       left 312px
-      bottom 106px
+      bottom 112px
       position absolute
 
 

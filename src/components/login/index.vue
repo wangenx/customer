@@ -16,8 +16,8 @@
           </el-form-item>
         </el-form>
         <div class="forget-pass">
-          <span @click="isLogin = false">修改密码</span>
-          <span></span>
+          <!-- <span @click="isLogin = false">修改密码</span>
+          <span></span> -->
           <span @click="isLogin = false">忘记密码</span>
         </div>
       </div>
@@ -161,13 +161,14 @@ export default {
     },
     // 发送验证码
     sendCode () {
-      if (this.ruleForm.phone === '') {
+      if (this.ruleForm.userName === '') {
         this.$message.warning('请输入手机号')
         return
       }
-      sendCode().then(res => {
-        if (res.code === 0) {
+      sendCode(this.ruleForm.userName).then(res => {
+        if (res.code === 200) {
           this.isSend = true
+          this.$message.success('发送验证码成功')
           this.time()
         }
       })

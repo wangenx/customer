@@ -75,6 +75,7 @@
         <el-button size="small" @click="DeleteRules">删除</el-button>
       </div>
       <el-pagination
+        v-show="pagination.total > pagination.pageSize"
         background
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
@@ -94,7 +95,7 @@
         <span>是否删除选中规则？</span>
         <span slot="footer" class="dialog-footer">
           <el-button size="small" @click="deleteDialogVisible = false">取消</el-button>
-          <el-button size="small" type="primary" @click="deleteDialogVisible = false">确认</el-button>
+          <el-button size="small" type="primary" @click="deteleRuleAll">确认</el-button>
         </span>
       </el-dialog>
       <el-dialog
@@ -143,7 +144,7 @@
         </el-form>
         <span slot="footer" class="dialog-footer">
           <el-button size="small" @click="newRuleDialogVisible = false">取消</el-button>
-          <el-button size="small" type="primary" @click="newRule('ruleForm')">{{ butoonText }}</el-button>
+          <el-button :disabled="isSubmit" size="small" type="primary" @click="newRule('ruleForm')">{{ butoonText }}</el-button>
         </span>
       </el-dialog>
     </div>
@@ -324,7 +325,8 @@ export default {
           label: '澳门'
         }
       ],
-      ruleLoading: false
+      ruleLoading: false,
+      isSubmit: false
     }
   },
   created () {
@@ -400,6 +402,7 @@ export default {
               return this.$message.error('请填写条件')
             }
           }
+          this.isSubmit = true
           if (this.ruleFormTitle === '新建规则') {
             const params = {
               ruleName: this.ruleForm.ruleName,
@@ -411,6 +414,9 @@ export default {
                 this.$message.success('新建规则成功')
                 this.getRuleList()
                 this.newRuleDialogVisible = false
+                this.isSubmit = false
+              } else {
+                this.isSubmit = false
               }
             })
           } else if (this.ruleFormTitle === '修改规则') {
@@ -424,6 +430,10 @@ export default {
               if (res.code === 200) {
                 this.$message.success('修改规则成功')
                 this.newRuleDialogVisible = false
+                this.isSubmit = false
+                this.getRuleList()
+              } else {
+                this.isSubmit = false
               }
             })
           }
@@ -490,20 +500,35 @@ export default {
     // 删除多个规则
     DeleteRules () {
       if (this.deleteRuleArr.length > 0) {
-        const params = this.deleteRuleArr.map(e => {
-          return e.ruleId
-        })
-        postRuleDelete(params).then(res => {
-          if (res.code === 200) {
-            this.$message.success('删除规则成功')
-            this.getRuleList()
-            this.selectAll = false
-            this.deleteRuleArr = []
-          }
-        })
+        this.deleteDialogVisible = true
+        // const params = this.deleteRuleArr.map(e => {
+        //   return e.ruleId
+        // })
+        // postRuleDelete(params).then(res => {
+        //   if (res.code === 200) {
+        //     this.$message.success('删除规则成功')
+        //     this.getRuleList()
+        //     this.selectAll = false
+        //     this.deleteRuleArr = []
+        //   }
+        // })
       } else {
         this.$message.warning('请选择规则')
       }
+    },
+    deteleRuleAll () {
+      const params = this.deleteRuleArr.map(e => {
+        return e.ruleId
+      })
+      postRuleDelete(params).then(res => {
+        if (res.code === 200) {
+          this.$message.success('删除规则成功')
+          this.getRuleList()
+          this.selectAll = false
+          this.deleteDialogVisible = false
+          this.deleteRuleArr = []
+        }
+      })
     }
   }
 }
