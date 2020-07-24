@@ -603,7 +603,7 @@ export default {
     // 更换分组
     replaceGroup (row) {
       this.distributionRuleForm.groupId = row.groupId
-      this.distributionRuleForm.userId = row.accountId
+      this.distributionRuleForm.userId = row.accountId ? row.accountId : row.kcSalesId
       this.distributionDialogVisible = true
     },
     // 提交更换分组
