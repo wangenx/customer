@@ -99,6 +99,7 @@
           label="操作">
           <template slot-scope="props">
             <div class="group-operation">
+              <span @click="replaceGroup(props.row)">更换分组</span>
               <span class="el-icon-edit" title="编辑分组" @click="editGroup(props.row)"></span>
               <el-popover
                 v-model="props.row.isDelete"
@@ -120,12 +121,7 @@
         ref="tabelAccount"
         v-loading="accountLoading"
         :data="tableDataAccount"
-        @selection-change="handleSelectionChange"
         style="width: 100%">
-        <el-table-column
-          type="selection"
-          width="55">
-        </el-table-column>
         <el-table-column
           prop="phoneNum"
           label="账号名">
@@ -170,10 +166,10 @@
     </div>
     <div class="page clearfix" style="padding-bottom: 40px;">
       <div class="select-all">
-        <el-checkbox size="small" v-model="selectAll" @change="handleSelectionChangeCheckbox" label="全选" border></el-checkbox>
+        <el-checkbox v-show="isGroup" size="small" v-model="selectAll" @change="handleSelectionChangeCheckbox" label="全选" border></el-checkbox>
+        <el-button v-show="isGroup" size="small" @click="batchAllGroup">批量分组</el-button>
         <el-button v-show="isGroup" size="small" @click="deleteAllGroup">删除分组</el-button>
         <el-button v-show="isGroup" size="small" @click="deleteAllAccount">删除账号</el-button>
-        <el-button v-show="!isGroup" size="small" @click="deleteAllAccount1">删除账号</el-button>
       </div>
       <el-pagination
         v-show="pagination.total > pagination.pageSize"
@@ -382,10 +378,6 @@ export default {
     this.getGroupAllList()
   },
   methods: {
-    // 删除全部账号
-    deleteAllAccount1 () {
-      this.deleteArrAccount.length > 0 ? this.deleteAccountDialogVisible = true : this.$message.warning('请选择账号')
-    },
     // 获取账号列表
     getAccountList () {
       this.isGroup = false
@@ -479,7 +471,7 @@ export default {
     },
     deleteAccountAll () {
       const params = this.deleteArrAccount.map(e => {
-        return e.accountId ? e.accountId : e.kcSalesId
+        return e.accountId
       })
       postAccountDelete(params).then(res => {
         if (res.code === 200) {
@@ -507,28 +499,15 @@ export default {
       
     },
     handleSelectionChangeCheckbox () {
-      if (this.isGroup) {
-        if (this.selectAll) {
-          this.tableData.forEach(row => {
-            this.$refs.multipleTable.toggleRowSelection(row)
-          })
-          this.deleteArrGroup = this.tableData
-        } else {
-          this.$refs.multipleTable.clearSelection();
-          this.deleteArrGroup = []
-        }
+      if (this.selectAll) {
+        this.tableData.forEach(row => {
+          this.$refs.multipleTable.toggleRowSelection(row)
+        })
+        this.deleteArrGroup = this.tableData
       } else {
-        if (this.selectAll) {
-          this.tableDataAccount.forEach(row => {
-            this.$refs.tabelAccount.toggleRowSelection(row)
-          })
-          this.deleteArrAccount = this.tableDataAccount
-        } else {
-          this.$refs.tabelAccount.clearSelection();
-          this.deleteArrAccount = []
-        }
+        this.$refs.multipleTable.clearSelection();
+        this.deleteArrGroup = []
       }
-      
     },
     // 多选删除分组
     deleteAllGroup () {
@@ -600,6 +579,10 @@ export default {
     handleClosDeleteAccount () {
       this.deleteAccountDialogVisible = false
     },
+    batchAllGroup () {
+      if (this.deleteArrAccount.length === 0 ) return this.$message.warning('请选择账号')
+      this.distributionDialogVisible = true
+    },
     // 更换分组
     replaceGroup (row) {
       this.distributionRuleForm.groupId = row.groupId
@@ -612,11 +595,17 @@ export default {
         groupId: this.distributionRuleForm.groupId,
         userIds: [this.distributionRuleForm.userId]
       }
+      if (this.deleteArrAccount.length > 0) {
+        params.userIds = this.deleteArrAccount.map(e => {
+          return e.accountId
+        })
+      }
       postAccountGroupChange(params).then(res => {
         if (res.code === 0) {
           this.$message.success('更换分组成功')
           this.getGroupAllList()
           this.distributionDialogVisible = false
+          if (this.deleteArrAccount.length > 0) this.this.deleteArrAccount = []
         }
       })
     },

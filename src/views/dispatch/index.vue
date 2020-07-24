@@ -3,6 +3,10 @@
     <div class="sale-data clearfix">
       <div class="data">
         <div class="title">销售数据</div>
+        <div class="all-charts">
+          <div class="funnel" ref="funnelCharts"></div>
+          <div class="bar" ref="barCharts"></div>
+        </div>
       </div>
       <div class="money">
         <div class="title">派单</div>
@@ -178,6 +182,12 @@
 
 <script>
 import { dispatchList, postTotalQuery, postAccountQuery, postTaskExpiration, postTaskCreate, postAccountList } from '@/api/api'
+let echarts = require('echarts/lib/echarts')
+require('echarts/lib/chart/funnel')
+require('echarts/lib/chart/bar')
+require('echarts/lib/component/tooltip')
+require('echarts/lib/component/title')
+require('echarts/lib/component/legend')
 export default {
   data () {
     var validatePurchaseNum = (rule, value, callback) => {
@@ -277,7 +287,116 @@ export default {
       }
     })
   },
+  mounted () {
+    this.getCharts()
+  },
   methods: {
+    getCharts () {
+      let funnelC = echarts.init(this.$refs.funnelCharts)
+      let barC = echarts.init(this.$refs.barCharts)
+      funnelC.setOption({
+        title: {
+          text: '漏斗图',
+          subtext: '纯属虚构'
+        },
+        tooltip: {
+          trigger: 'item',
+          formatter: "{a} <br/>{b} : {c}%"
+        },
+        toolbox: {
+          feature: {
+            dataView: {readOnly: false},
+            restore: {},
+            saveAsImage: {}
+          }
+        },
+        legend: {
+          data: ['展现','点击','访问','咨询','订单']
+        },
+        series: [
+          {
+            name:'漏斗图',
+            type:'funnel',
+            left: '10%',
+            top: 60,
+            //x2: 80,
+            bottom: 60,
+            width: '80%',
+            // height: {totalHeight} - y - y2,
+            min: 0,
+            max: 100,
+            minSize: '0%',
+            maxSize: '100%',
+            sort: 'descending',
+            gap: 2,
+            label: {
+                show: true,
+                position: 'inside'
+            },
+            labelLine: {
+                length: 10,
+                lineStyle: {
+                    width: 1,
+                    type: 'solid'
+                }
+            },
+            itemStyle: {
+                borderColor: '#fff',
+                borderWidth: 1
+            },
+            emphasis: {
+                label: {
+                    fontSize: 20
+                }
+            },
+            data: [
+                {value: 60, name: '访问'},
+                {value: 40, name: '咨询'},
+                {value: 20, name: '订单'},
+                {value: 80, name: '点击'},
+                {value: 100, name: '展现'}
+            ]
+          }
+        ]
+      })
+      barC.setOption({
+        color: ['#3398DB'],
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: {            // 坐标轴指示器，坐标轴触发有效
+              type: 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
+          }
+        },
+        grid: {
+          left: '3%',
+          right: '4%',
+          bottom: '3%',
+          containLabel: true
+        },
+        xAxis: [
+          {
+            type: 'category',
+            data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            axisTick: {
+                alignWithLabel: true
+            }
+          }
+        ],
+        yAxis: [
+          {
+            type: 'value'
+          }
+        ],
+        series: [
+          {
+            name: '直接访问',
+            type: 'bar',
+            barWidth: '60%',
+            data: [10, 52, 200, 334, 390, 330, 220]
+          }
+        ]
+      })
+    },
     // 派单提交
     taskSubmit (formName) {
       this.$refs[formName].validate((valid) => {
@@ -389,6 +508,15 @@ export default {
     border-radius 2px
   > .data
     width 64.37%
+    .all-charts
+      > div
+        float left
+      > .funnel
+        width 35%
+        height 300px
+      > .bar
+        width 65%
+        height 300px
   > .money
     width 33.67%
     margin-left 1.95%
