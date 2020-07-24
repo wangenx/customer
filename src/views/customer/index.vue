@@ -196,7 +196,7 @@
         </el-form>
         <span slot="footer" class="dialog-footer">
           <el-button size="small" @click="newCusmoterDialogVisible = false">取消</el-button>
-          <el-button size="small" type="primary" @click="newCustomer('cusmoterForm')">{{ butoonText }}</el-button>
+          <el-button :disabled="isSunmit" size="small" type="primary" @click="newCustomer('cusmoterForm')">{{ butoonText }}</el-button>
         </span>
       </el-dialog>
       <el-dialog
@@ -305,7 +305,8 @@ export default {
       accountList: [],
       deleteCustomerArr: [],
       distributionCustomId: '',
-      customerLoading: false
+      customerLoading: false,
+      isSunmit: false
     }
   },
   created () {
@@ -431,11 +432,15 @@ export default {
               customTags: this.cusmoterForm.customTags,
               chargeManId: this.cusmoterForm.chargeManId
             }
+            this.isSunmit = true
             postCommonCreate(params).then(res => {
               if (res.code === 200) {
                 this.$message.success('新建客户成功')
                 this.getCustomerList()
                 this.newCusmoterDialogVisible = false
+                this.isSunmit = false
+              } else {
+                this.isSunmit = false
               }
             })
           } else if (this.cusmoterFormTitle === '修改客户') {
@@ -450,11 +455,15 @@ export default {
               customPost: this.cusmoterForm.customPost,
               customTags: this.cusmoterForm.customTags,
             }
+            this.isSunmit = true
             postCustomEdit(params).then(res => {
               if (res.code === 200) {
                 this.$message.success('修改客户成功')
                 this.getCustomerList()
                 this.newCusmoterDialogVisible = false
+                this.isSunmit = false
+              } else {
+                this.isSunmit = false
               }
             })
           }

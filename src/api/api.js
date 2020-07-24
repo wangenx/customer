@@ -9,8 +9,8 @@ const dispatchList = (data) => {
 }
 
 // 发送验证码
-const sendCode = (data) => {
-  return request.post('/v1/account/send', data)
+const sendCode = (phone) => {
+  return request.post(`/v1/account/send?phone=${phone}`)
 }
 
 // 修改密码
@@ -40,7 +40,7 @@ const postTaskExpiration = (data) => {
 
 // 派单
 const postTaskCreate = (data) => {
-  return request.get('/analog-data/task-create.json', data)
+  return request.post('/v1/task/create', data)
 }
 
 // 新分组建
@@ -148,6 +148,11 @@ const postAccountAllList = (data) => {
   return request.post('/v1/account/list', data)
 }
 
+// 查询账户总列表
+const postAccountGroupChange = (data) => {
+  return request.post('/v1/account/group/change', data)
+}
+
 export {
   login,
   dispatchList,
@@ -178,5 +183,6 @@ export {
   postCustomEdit,
   postCustomDelete,
   postCustomBtachGroup,
-  postAccountAllList
+  postAccountAllList,
+  postAccountGroupChange
 }
