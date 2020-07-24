@@ -16,8 +16,8 @@
           </el-form-item>
         </el-form>
         <div class="forget-pass">
-          <span @click="isLogin = false">修改密码</span>
-          <span></span>
+          <!-- <span @click="isLogin = false">修改密码</span>
+          <span></span> -->
           <span @click="isLogin = false">忘记密码</span>
         </div>
       </div>
