@@ -296,8 +296,8 @@ export default {
       let barC = echarts.init(this.$refs.barCharts)
       funnelC.setOption({
         title: {
-          text: '漏斗图',
-          subtext: '纯属虚构'
+          // text: '漏斗图',
+          // subtext: '纯属虚构'
         },
         tooltip: {
           trigger: 'item',
@@ -371,6 +371,7 @@ export default {
           left: '3%',
           right: '4%',
           bottom: '3%',
+          top: '2%',
           containLabel: true
         },
         xAxis: [
@@ -509,6 +510,7 @@ export default {
   > .data
     width 64.37%
     .all-charts
+      margin-top 20px
       > div
         float left
       > .funnel

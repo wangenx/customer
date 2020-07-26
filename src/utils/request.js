@@ -1,6 +1,7 @@
 import axios from "axios";
 import { Message } from "element-ui";
 import store from "../store";
+import router from "../router";
 // import router from "../router";
 
 // 创建axios实例
@@ -17,6 +18,8 @@ service.interceptors.request.use(
   config => {
     if (store.state.UserToken) {
       config.headers["Authorization"] = 'Bearer ' + store.state.UserToken; // 让每一个请求携带自定义token 请根据实际情况自行修改
+    } else {
+      router.push({ path: '/' })
     }
     return config;
   },

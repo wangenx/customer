@@ -99,7 +99,7 @@
           label="操作">
           <template slot-scope="props">
             <div class="group-operation">
-              <span @click="replaceGroup(props.row)">更换分组</span>
+              <!-- <span @click="replaceGroup(props.row)">更换分组</span> -->
               <span class="el-icon-edit" title="编辑分组" @click="editGroup(props.row)"></span>
               <el-popover
                 v-model="props.row.isDelete"
@@ -601,11 +601,11 @@ export default {
         })
       }
       postAccountGroupChange(params).then(res => {
-        if (res.code === 0) {
+        if (res.code === 200) {
           this.$message.success('更换分组成功')
-          this.getGroupAllList()
+          this.getGroupList()
           this.distributionDialogVisible = false
-          if (this.deleteArrAccount.length > 0) this.this.deleteArrAccount = []
+          this.deleteArrAccount = []
         }
       })
     },

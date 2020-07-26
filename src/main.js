@@ -80,6 +80,12 @@ Vue.use(Tag);
 Vue.prototype.$message = Message;
 import "@/styles/index.stylus";
 
+// router.beforeEach((to, from, next) => {
+//   if (!store.state.UserToken) {
+//     next('/')
+//   }
+// })
+
 router.beforeEach((to, from, next) => {
   /* 必须调用 `next` */
   router.options.routes.forEach(item => {
@@ -90,6 +96,9 @@ router.beforeEach((to, from, next) => {
   store.commit('SET_CURRENTMENU', to.path.slice(6))
   next()
 })
+
+console.log(store.state.UserToken)
+
 
 
 
