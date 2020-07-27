@@ -51,7 +51,7 @@ export default new Vuex.Store({
     },
     // 登录
     Login ({ commit }, data) {
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve) => {
         login(data)
           .then(res => {
             if (res.code === 200) {
@@ -59,7 +59,7 @@ export default new Vuex.Store({
               commit("SET_NAME", res.data.sysUser.realName);
               resolve(res);
             } else {
-              reject(res);
+              resolve(res);
             }
           })
           .catch(error => {
