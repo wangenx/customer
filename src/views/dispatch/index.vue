@@ -318,9 +318,9 @@ export default {
             bottom: 60,
             width: '80%',
             // height: {totalHeight} - y - y2,
-            min: 0,
-            max: 100,
-            minSize: '0%',
+            min: 2500,
+            max: 10000,
+            minSize: '0',
             maxSize: '100%',
             sort: 'descending',
             gap: 2,
@@ -346,7 +346,7 @@ export default {
             },
             data: [
                 {value: 10000, name: '线索总数'},
-                {value: 9000, name: '转化为机会'},
+                {value: 7500, name: '转化为机会'},
                 {value: 5000, name: '转为订单数'}
             ]
           }
@@ -638,7 +638,6 @@ export default {
     background-size 100%
     background-color #fff
     border-radius 10px
-
     .dialog-top
       width 185px
       height 125px
