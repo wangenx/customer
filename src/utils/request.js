@@ -33,6 +33,8 @@ service.interceptors.response.use(
   response => {
     if (response.data.code === 200) { // 登录失效或者未登录
       return response.data;
+    } else if (response.data.code === 200001) {
+      router.push('/')
     } else {
       Message({
         message: response.data.msg,
