@@ -17,7 +17,7 @@
           </div>
           <div class="balance">
             <div>账户余额</div>
-            <div>{{ totalQuery.restMoney }}万元</div>
+            <div>{{ totalQuery.restMoney }}元</div>
           </div>
         </div>
         <div class="price" @click="dialogShow = true">派单 {{ totalQuery.perCastMoney }}元/条</div>
@@ -69,43 +69,36 @@
             </el-table-column>
             <el-table-column
               prop="totalClue"
-              align="center"
               sortable="custom"
               label="分配线索">
             </el-table-column>
             <el-table-column
               prop="totalPhoneCount"
-              align="center"
               sortable
               label="拨通电话">
             </el-table-column>
             <el-table-column
               prop="totalPhoneTime"
-              align="center"
               sortable
               label="通话总时长">
             </el-table-column>
             <el-table-column
               prop="totalCustom"
-              align="center"
               sortable
               label="录入客户">
             </el-table-column>
             <el-table-column
               prop="totalACustom"
-              align="center"
               sortable
               label="A类客户">
             </el-table-column>
             <el-table-column
               prop="totalFinishCustom"
-              align="center"
               sortable
               label="成交客户">
             </el-table-column>
             <el-table-column
               prop="totalExpiredTask"
-              align="center"
               sortable
               label="超时任务">
             </el-table-column>
@@ -184,7 +177,7 @@
 import { dispatchList, postTotalQuery, postAccountQuery, postTaskExpiration, postTaskCreate, postAccountList } from '@/api/api'
 let echarts = require('echarts/lib/echarts')
 require('echarts/lib/chart/funnel')
-require('echarts/lib/chart/bar')
+require('echarts/lib/chart/line')
 require('echarts/lib/component/tooltip')
 require('echarts/lib/component/title')
 require('echarts/lib/component/legend')
@@ -292,26 +285,28 @@ export default {
   },
   methods: {
     getCharts () {
-      let funnelC = echarts.init(this.$refs.funnelCharts)
-      let barC = echarts.init(this.$refs.barCharts)
+      let funnelC = null
+      let barC = null
+      funnelC = echarts.init(this.$refs.funnelCharts)
+      barC = echarts.init(this.$refs.barCharts)
       funnelC.setOption({
         title: {
           // text: '漏斗图',
           // subtext: '纯属虚构'
         },
         tooltip: {
-          trigger: 'item',
-          formatter: "{a} <br/>{b} : {c}%"
+          trigger: 'item'
+          // formatter: "{a} <br/>{b} : {c}%"
         },
-        toolbox: {
-          feature: {
-            dataView: {readOnly: false},
-            restore: {},
-            saveAsImage: {}
-          }
-        },
+        // toolbox: {
+        //   feature: {
+        //     dataView: {readOnly: false},
+        //     restore: {},
+        //     saveAsImage: {}
+        //   }
+        // },
         legend: {
-          data: ['展现','点击','访问','咨询','订单']
+          data: ['线索总数','转化为机会','转为订单数']
         },
         series: [
           {
@@ -336,8 +331,8 @@ export default {
             labelLine: {
                 length: 10,
                 lineStyle: {
-                    width: 1,
-                    type: 'solid'
+                  width: 1,
+                  type: 'solid'
                 }
             },
             itemStyle: {
@@ -345,57 +340,40 @@ export default {
                 borderWidth: 1
             },
             emphasis: {
-                label: {
-                    fontSize: 20
-                }
+              label: {
+                fontSize: 20
+              }
             },
             data: [
-                {value: 60, name: '访问'},
-                {value: 40, name: '咨询'},
-                {value: 20, name: '订单'},
-                {value: 80, name: '点击'},
-                {value: 100, name: '展现'}
+                {value: 10000, name: '线索总数'},
+                {value: 9000, name: '转化为机会'},
+                {value: 5000, name: '转为订单数'}
             ]
           }
         ]
       })
       barC.setOption({
-        color: ['#3398DB'],
         tooltip: {
-          trigger: 'axis',
-          axisPointer: {            // 坐标轴指示器，坐标轴触发有效
-              type: 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
-          }
+          trigger: 'axis'
         },
         grid: {
           left: '3%',
           right: '4%',
+          top: '3%',
           bottom: '3%',
-          top: '2%',
           containLabel: true
         },
-        xAxis: [
-          {
-            type: 'category',
-            data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-            axisTick: {
-                alignWithLabel: true
-            }
-          }
-        ],
-        yAxis: [
-          {
+        xAxis: {
+          type: 'category',
+          data: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30']
+        },
+        yAxis: {
             type: 'value'
-          }
-        ],
-        series: [
-          {
-            name: '直接访问',
-            type: 'bar',
-            barWidth: '60%',
-            data: [10, 52, 200, 334, 390, 330, 220]
-          }
-        ]
+        },
+        series: [{
+            data: [820, 932, 901, 934, 1290, 1330, 1320, 820, 932, 901, 934, 1290, 1330, 1320, 820, 932, 901, 934, 1290, 1330, 1320, 820, 932, 901, 934, 1290, 1330, 1320, 500, 900],
+            type: 'line'
+        }]
       })
     },
     // 派单提交
@@ -415,6 +393,7 @@ export default {
               this.$message.success('派单成功')
               this.dialogShow = false
               this.subMitLoading = false
+              this.$refs[formName].resetFields();
             } else {
               this.subMitLoading = false
             }
@@ -431,7 +410,7 @@ export default {
       postAccountList(this.form.groupId).then(res => {
         if (res.code === 400001) {
           this.form.groupId = ''
-          this.$message.warning('该分组下无账号')
+          // this.$message.warning('该分组下无账号')
         } else if (res.code === 200) {
           this.accountList = res.data.accounts.length
         }
@@ -548,6 +527,8 @@ export default {
           font-size 24px
           line-height 32px
           font-weight 600
+          white-space normal
+          word-break break-all
       > .balance
         width 146px
         border-right none
@@ -563,6 +544,8 @@ export default {
           font-size 24px
           line-height 32px
           font-weight 600
+          white-space normal
+          word-break break-all
     .price
       width 340px
       height 58px

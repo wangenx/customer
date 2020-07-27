@@ -13,9 +13,9 @@
             :value="item.groupId">
           </el-option>
         </el-select>
-        <el-button size="small" @click="getGroupList()" type="primary">查询分组</el-button>
+        <el-button size="small" @click="getGroupList(1)" type="primary">查询分组</el-button>
         <el-input v-model="form.key" size="small" placeholder="请输入账号名"></el-input>
-        <el-button size="small" @click="getAccountList()" type="primary">查询账号</el-button>
+        <el-button size="small" @click="getAccountList(1)" type="primary">查询账号</el-button>
       </div>
       <div class="operation">
         <el-button size="small" @click="addGroup">新建分组</el-button>
@@ -167,9 +167,9 @@
     <div class="page clearfix" style="padding-bottom: 40px;">
       <div class="select-all">
         <el-checkbox v-show="isGroup" size="small" v-model="selectAll" @change="handleSelectionChangeCheckbox" label="全选" border></el-checkbox>
-        <el-button v-show="isGroup" size="small" @click="batchAllGroup">批量分组</el-button>
         <el-button v-show="isGroup" size="small" @click="deleteAllGroup">删除分组</el-button>
         <el-button v-show="isGroup" size="small" @click="deleteAllAccount">删除账号</el-button>
+        <el-button v-show="isGroup" size="small" @click="batchAllGroup">批量分组</el-button>
       </div>
       <el-pagination
         v-show="pagination.total > pagination.pageSize"
@@ -379,7 +379,10 @@ export default {
   },
   methods: {
     // 获取账号列表
-    getAccountList () {
+    getAccountList (num) {
+      if (num === 1) {
+        this.pagination.page = 1
+      }
       this.isGroup = false
       const params = {
         key: this.form.key,
@@ -429,7 +432,10 @@ export default {
       this.deleteArrAccount.length > 0 ? this.deleteAccountDialogVisible = true : this.$message.warning('请选择账号')
     },
     // 查询分组列表
-    getGroupList () {
+    getGroupList (num) {
+      if (num) {
+        this.pagination.page = 1
+      }
       this.isGroup = true
       const params = {
         groupId: this.form.groupId,
@@ -478,6 +484,7 @@ export default {
           if (this.isGroup) {
             this.$message.success('删除账号成功')
             this.getGroupList()
+            this.deleteArrAccount = []
             this.deleteAccountDialogVisible = false
           } else {
             this.$message.success('删除账号成功')
@@ -532,7 +539,7 @@ export default {
         }
       })
     },
-    // 删除账号
+    // 删除单个账号
     deleteAccount (row, groupRow) {
       postAccountDelete([row.accountId ? row.accountId : row.kcSalesId]).then(res => {
         if (res.code === 200) {
@@ -542,7 +549,7 @@ export default {
         }
       })
     },
-    // 删除分组
+    // 删除单个分组
     deleteGroup (id, row) {
       const params = [id]
       postCroupDelete(params).then(res => {
