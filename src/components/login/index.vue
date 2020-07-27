@@ -12,7 +12,7 @@
             <el-input type="password" v-model="loginFuleForm.password" placeholder="输入密码"></el-input>
           </el-form-item>
           <el-form-item>
-            <el-button @click="submitForm('loginFuleForm')">登录</el-button>
+            <el-button :disabled="loginDisabled" @click="submitForm('loginFuleForm')">登录</el-button>
           </el-form-item>
         </el-form>
         <div class="forget-pass">
@@ -37,7 +37,7 @@
             <el-input type="password" v-model="ruleForm.passwordAgin" placeholder="确认新密码"></el-input>
           </el-form-item>
           <el-form-item>
-            <el-button @click="editSubmit('ruleForm')">确定</el-button>
+            <el-button :disabled="EditDisabled" @click="editSubmit('ruleForm')">确定</el-button>
           </el-form-item>
         </el-form>
         <div class="send-code" :class="[ isSend ? 'send-after' : '' ]">
@@ -119,16 +119,22 @@ export default {
       },
       isLogin: true,
       num: 60,
-      interval: null
+      interval: null,
+      loginDisabled: false,
+      EditDisabled: false
     }
   },
   methods: {
     submitForm(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
+          this.loginDisabled = true
           this.$store.dispatch('Login', this.loginFuleForm).then(res => {
             if (res.code === 200) {
+              this.loginDisabled = false
               this.$router.push('home')
+            } else {
+              this.loginDisabled = false
             }
           })
         } else {
@@ -146,11 +152,15 @@ export default {
             code: this.ruleForm.code,
             newPassword: this.ruleForm.newPassword
           }
+          this.EditDisabled = true
           editPassword(params).then(res => {
             if (res.code === 200) {
               this.$message.success('修改密码成功')
               this.isLogin = true
+              this.EditDisabled = false
               this.$refs[formName].resetFields()
+            } else {
+              this.EditDisabled = false
             }
           })
         } else {
