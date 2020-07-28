@@ -14,7 +14,7 @@
           </el-option>
         </el-select>
         <el-button size="small" @click="getGroupList(1)" type="primary">查询分组</el-button>
-        <el-input v-model="form.key" size="small" placeholder="请输入账号名"></el-input>
+        <el-input v-model="form.key" size="small" placeholder="请输入真实姓名/员工id"></el-input>
         <el-button size="small" @click="getAccountList(1)" type="primary">查询账号</el-button>
       </div>
       <div class="operation">
@@ -44,7 +44,7 @@
                 align="right"
                 width="273">
                 <template slot-scope="scope">
-                  <span @click="accountRowClick(scope.row)" :class="[scope.row.isClick ? 'account-click' : 'account-noclick']">{{ scope.row.accountName }}</span>
+                  <span @click="accountRowClick(scope.row)" :class="[scope.row.isClick ? 'account-click' : 'account-noclick']">{{ scope.row.realName }}</span>
                 </template>
               </el-table-column>
               <el-table-column
@@ -81,6 +81,7 @@
         </el-table-column>
         <el-table-column
           type="selection"
+          :selectable="canSelectGroups"
           width="55">
         </el-table-column>
         <el-table-column
@@ -98,7 +99,7 @@
           align="left"
           label="操作">
           <template slot-scope="props">
-            <div class="group-operation">
+            <div class="group-operation" v-if="props.row.groupName !== '未分组'">
               <!-- <span @click="replaceGroup(props.row)">更换分组</span> -->
               <span class="el-icon-edit" title="编辑分组" @click="editGroup(props.row)"></span>
               <el-popover
@@ -185,27 +186,28 @@
     <div class="dialog">
       <el-dialog
         :title="ruleFormTitle"
+        :close-on-click-modal="false"
         :visible.sync="newAccountDialogVisible"
         width="480px"
         :before-close="handleClose">
         <div class="dialog-line"></div>
         <el-form :model="ruleForm" :rules="rules" size="small" ref="ruleForm" label-width="100px" label-position="top" class="demo-ruleForm">
           <el-form-item label="账号名" prop="userName">
-            <el-input :disabled="this.ruleFormTitle === '编辑账号'" v-model="ruleForm.userName" placeholder="请输入账号名"></el-input>
+            <el-input :disabled="this.ruleFormTitle === '编辑账号'" v-model="ruleForm.userName" placeholder="请输入手机号"></el-input>
           </el-form-item>
-          <el-form-item label="员工ID">
+          <el-form-item label="员工ID" v-show="ruleFormTitle === '编辑账号'">
             <el-input v-model="ruleForm.staffId" placeholder="请输入员工ID"></el-input>
           </el-form-item>
           <el-form-item label="员工姓名" prop="realName">
             <el-input v-model="ruleForm.realName" placeholder="请输入员工姓名"></el-input>
           </el-form-item>
-          <el-form-item label="备注" prop="remarks">
+          <el-form-item label="备注">
             <el-input v-model="ruleForm.remarks" placeholder="请输入备注"></el-input>
           </el-form-item>
-          <el-form-item label="选择组" prop="groupId">
+          <el-form-item label="选择组" v-show="ruleFormTitle === '新建账号'">
             <el-select v-model="ruleForm.groupId" placeholder="请选择">
               <el-option
-                v-for="item in groupArr"
+                v-for="item in groupArrNewAccount"
                 :key="item.groupId"
                 :label="item.groupName"
                 :value="item.groupId">
@@ -220,6 +222,7 @@
       </el-dialog>
       <el-dialog
         :title="ruleFormGroupingTitle"
+        :close-on-click-modal="false"
         :visible.sync="newGroupingDialogVisible"
         width="480px"
         :before-close="handleCloseGrouping">
@@ -240,6 +243,7 @@
       <el-dialog
         title="分配至"
         :visible.sync="distributionDialogVisible"
+        :close-on-click-modal="false"
         width="480px"
         :before-close="handleClosDistribution">
         <div class="dialog-line"></div>
@@ -263,6 +267,7 @@
       <el-dialog
         title="删除"
         :visible.sync="deleteDialogVisible"
+        :close-on-click-modal="false"
         width="480px"
         :before-close="handleClosDelete">
         <div class="dialog-line"></div>
@@ -275,6 +280,7 @@
       <el-dialog
         title="删除"
         :visible.sync="deleteAccountDialogVisible"
+        :close-on-click-modal="false"
         width="480px"
         :before-close="handleClosDeleteAccount">
         <div class="dialog-line"></div>
@@ -292,6 +298,16 @@
 import { postCroupCreate, postAccountQuery, postCroupEdit, postCroupDelete, postAccountCreate, postAccountEdit, postAccountList, postAccountDelete, postAccountAllList, postAccountGroupChange } from '@/api/api'
 export default {
   data () {
+    var validateUsername = (rule, value, callback) => {
+      const reg = /^[1][3,4,5,7,8,9][0-9]{9}$/
+      if (value === '') {
+        callback(new Error('请输入手机号'))
+      } else if (!reg.test(value)) {
+        callback(new Error('请输入正确手机号'))
+      } else {
+        callback()
+      }
+    }
     return {
       styleObject: {
         textAlign: 'right'
@@ -323,6 +339,7 @@ export default {
         accountId: ''
       },
       groupArr: [], // 下拉框分组列表
+      groupArrNewAccount: [], // 新建账号下拉分组
       ruleFormTitle: '新建账号',
       ruleFormGrouping: {
         groupId: '',
@@ -339,16 +356,10 @@ export default {
       deleteArrAccount: [],
       rules: {
         userName: [
-           { required: true, message: '请输入账号名', trigger: 'blur' }
+           { validator: validateUsername, trigger: 'blur' }
         ],
         realName: [
            { required: true, message: '请输入员工姓名', trigger: 'blur' }
-        ],
-        remarks: [
-           { required: true, message: '请输入备注', trigger: 'blur' }
-        ],
-        groupId: [
-           { required: true, message: '请选择分组', trigger: 'change' }
         ]
       },
       rulesGrouping: {
@@ -378,6 +389,13 @@ export default {
     this.getGroupAllList()
   },
   methods: {
+    canSelectGroups (row) {
+      if (row.groupName === '未分组') {
+        return false
+      } else {
+        return true
+      }
+    },
     // 获取账号列表
     getAccountList (num) {
       if (num === 1) {
@@ -408,7 +426,14 @@ export default {
     getGroupAllList () {
       postAccountQuery({}).then(res => {
         if (res.code === 200) {
-          this.groupArr = res.data.groups
+          this.groupArrNewAccount = res.data.groups
+          this.groupArr = [
+            {
+              groupId: '',
+              groupName: '全部分组'
+            }
+          ]
+          this.groupArr.push(res.data.groups)
         }
       })
     },
@@ -508,9 +533,20 @@ export default {
     handleSelectionChangeCheckbox () {
       if (this.selectAll) {
         this.tableData.forEach(row => {
-          this.$refs.multipleTable.toggleRowSelection(row)
+          if (this.isGroup) {
+            if (row.groupName !== '未分组') {
+              this.$refs.multipleTable.toggleRowSelection(row)
+            }
+          } else {
+            this.$refs.multipleTable.toggleRowSelection(row)
+          }
         })
-        this.deleteArrGroup = this.tableData
+        this.selectAll = true
+        if (this.isGroup) {
+          this.deleteArrGroup = this.tableData.slice(1)
+        } else {
+          this.deleteArrGroup = this.tableData
+        }
       } else {
         this.$refs.multipleTable.clearSelection();
         this.deleteArrGroup = []
@@ -680,12 +716,12 @@ export default {
       })
     },
     // 编辑账号
-    editAccount (row, groupId) {
+    editAccount (row) {
       this.ruleForm.accountId = row.accountId ? row.accountId : row.kcSalesId
       this.ruleForm.userName = row.accountName ? row.accountName : row.phoneNum
       this.ruleForm.staffId = row.staffId
       this.ruleForm.remarks = row.remarks ? row.remarks : row.remark
-      this.ruleForm.groupId = groupId ? groupId : row.groupId
+      // this.ruleForm.groupId = groupId ? groupId : row.groupId
       this.ruleForm.realName = row.realName
       this.ruleFormTitle = '编辑账号'
       this.newAccountDialogVisible = true
@@ -694,7 +730,6 @@ export default {
     addAccount () {
       this.ruleForm.accountId = ''
       this.ruleForm.userName = ''
-      this.ruleForm.staffId = ''
       this.ruleForm.remarks = ''
       this.ruleForm.groupId = ''
       this.ruleForm.realName = ''
@@ -709,8 +744,7 @@ export default {
           if (this.ruleFormTitle === '新建账号') {
             const params = {
               userName: this.ruleForm.userName,
-              staffId: this.ruleForm.staffId,
-              remarks: this.ruleForm.staffId,
+              remarks: this.ruleForm.remarks,
               groupId: this.ruleForm.groupId,
               realName: this.ruleForm.realName
             }
@@ -728,8 +762,8 @@ export default {
             const params = {
               accountId: this.ruleForm.accountId,
               staffId: this.ruleForm.staffId,
-              remarks: this.ruleForm.staffId,
-              groupId: this.ruleForm.groupId,
+              remarks: this.ruleForm.remarks,
+              // groupId: this.ruleForm.groupId,
               realName: this.ruleForm.realName
             }
             postAccountEdit(params).then(res => {
@@ -911,5 +945,5 @@ export default {
   height 1px
   margin-bottom 16px
   background-color #d9d9d9
-  
-</style>>
+
+</style>

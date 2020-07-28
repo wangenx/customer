@@ -48,11 +48,6 @@
           show-overflow-tooltip>
         </el-table-column>
         <el-table-column
-          prop="customerIndustry"
-          label="所属行业"
-          show-overflow-tooltip>
-        </el-table-column>
-        <el-table-column
           prop="companyName"
           label="公司名称"
           show-overflow-tooltip>
@@ -123,6 +118,7 @@
       <el-dialog
         title="删除"
         :visible.sync="deleteDialogVisible"
+        :close-on-click-modal="false"
         width="480px"
         :before-close="handleClosDelete">
         <div class="dialog-line"></div>
@@ -135,6 +131,7 @@
       <el-dialog
         :title="cusmoterFormTitle"
         :visible.sync="newCusmoterDialogVisible"
+        :close-on-click-modal="false"
         width="480px"
         :before-close="handleClose">
         <div class="dialog-line"></div>
@@ -149,16 +146,6 @@
                 :key="item.levelName"
                 :label="item.levelName"
                 :value="item.levelName">
-              </el-option>
-            </el-select>
-          </el-form-item>
-          <el-form-item label="所属行业" prop="industry">
-            <el-select v-model="cusmoterForm.industry" placeholder="请选择">
-              <el-option
-                v-for="item in industryList"
-                :key="item.industryName"
-                :label="item.industryName"
-                :value="item.industryName">
               </el-option>
             </el-select>
           </el-form-item>
@@ -202,6 +189,7 @@
       <el-dialog
         title="分配至"
         :visible.sync="distributionDialogVisible"
+        :close-on-click-modal="false"
         width="480px"
         :before-close="handleClosDistribution">
         <div class="dialog-line"></div>
@@ -227,7 +215,7 @@
 </template>
 
 <script>
-import { postAccountQuery, postCustomerQuery, postCommonLevel, postCommonIndustry, postCommonTag, postCommonTagAdd, postAccountAllList, postCommonCreate, postCustomEdit, postCustomDelete, postCustomBtachGroup } from '@/api/api'
+import { postAccountQuery, postCustomerQuery, postCommonLevel, postCommonTag, postCommonTagAdd, postAccountAllList, postCommonCreate, postCustomEdit, postCustomDelete, postCustomBtachGroup } from '@/api/api'
 export default {
   data () {
     return {
@@ -251,7 +239,6 @@ export default {
         remarks: '',
         chargeManId: '',
         level: '',
-        industry: '',
         customPhone: '',
         customPost: '',
         companyName: '',
@@ -261,9 +248,6 @@ export default {
       rules: {
         level: [
            { required: true, message: '请选择客户分级', trigger: 'change' }
-        ],
-        industry: [
-           { required: true, message: '请选择所属行业', trigger: 'change' }
         ],
         remarks: [
            { required: true, message: '请输入备注', trigger: 'blur' }
@@ -300,7 +284,6 @@ export default {
       },
 
       customerLevelList: [],
-      industryList: [],
       tagList: [],
       accountList: [],
       deleteCustomerArr: [],
@@ -319,11 +302,6 @@ export default {
     postCommonLevel({}).then(res => {
       if (res.code === 200) {
         this.customerLevelList = res.data.levels
-      }
-    })
-    postCommonIndustry({}).then(res => {
-      if (res.code === 200) {
-        this.industryList = res.data.industries
       }
     })
     postCommonTag({}).then(res => {
@@ -404,7 +382,6 @@ export default {
     addCusmoter () {
       this.cusmoterForm.customId = ''
       this.cusmoterForm.level = ''
-      this.cusmoterForm.industry = ''
       this.cusmoterForm.customName = ''
       this.cusmoterForm.companyName = ''
       this.cusmoterForm.customPhone = ''
@@ -424,7 +401,6 @@ export default {
           if (this.cusmoterFormTitle === '新建客户') {
             const params = {
               level: this.cusmoterForm.level,
-              industry: this.cusmoterForm.industry,
               customName: this.cusmoterForm.customName,
               companyName: this.cusmoterForm.companyName,
               customPhone: this.cusmoterForm.customPhone,
@@ -448,7 +424,6 @@ export default {
               customerId: this.cusmoterForm.customerId,
               chargeManId:this.cusmoterForm.chargeManId,
               level: this.cusmoterForm.level,
-              industry: this.cusmoterForm.industry,
               customName: this.cusmoterForm.customName,
               companyName: this.cusmoterForm.companyName,
               customPhone: this.cusmoterForm.customPhone,
@@ -477,7 +452,6 @@ export default {
       this.cusmoterForm.customerId = row.customerId
       this.cusmoterForm.chargeManId = row.managerId
       this.cusmoterForm.level = row.customerLevel
-      this.cusmoterForm.industry = row.customerIndustry
       this.cusmoterForm.customName = row.customerName
       this.cusmoterForm.companyName = row.companyName
       this.cusmoterForm.customPhone = row.customerPhone

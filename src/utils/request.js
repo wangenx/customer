@@ -34,7 +34,10 @@ service.interceptors.response.use(
     if (response.data.code === 200) { // 登录失效或者未登录
       return response.data;
     } else if (response.data.code === 200001) {
-      router.push('/')
+      // router.push('/')
+      store.dispatch('webLoginOut').then(() => {
+        router.push({ name: 'Login' })
+      })
     } else {
       Message({
         message: response.data.msg,

@@ -88,6 +88,7 @@
     <div class="dialog">
       <el-dialog
         title="删除"
+        :close-on-click-modal="false"
         :visible.sync="deleteDialogVisible"
         width="480px"
         :before-close="handleClosDelete">
@@ -100,6 +101,7 @@
       </el-dialog>
       <el-dialog
         :title="ruleFormTitle"
+        :close-on-click-modal="false"
         :visible.sync="newRuleDialogVisible"
         width="480px"
         :before-close="handleClose">
@@ -111,11 +113,10 @@
           <el-form-item label="条件">
             <div v-for="(item, index) in ruleForm.conditions" :key="index" class="condition">
               <el-select v-model="item.conditionName" placeholder="请选择">
-                <el-option label="城市" value="城市"></el-option>
+                <el-option label="省市" value="省市"></el-option>
               </el-select>
               <el-select v-model="item.conditionRule" placeholder="请选择">
                 <el-option label="等于" value="等于"></el-option>
-                <el-option label="小于" value="小于"></el-option>
               </el-select>
               <el-select
                 v-model="item.conditionVal"
@@ -174,7 +175,7 @@ export default {
         chargeGroupId: '',
         conditions: [
           {
-            conditionName: '城市',
+            conditionName: '省市',
             conditionRule: '',
             conditionVal: ''
           }
@@ -368,7 +369,7 @@ export default {
     // 新增新建账号条件
     addConditions () {
       this.ruleForm.conditions.push({
-        conditionName: '城市',
+        conditionName: '省市',
         conditionRule: '',
         conditionVal: ''
       })
@@ -384,7 +385,7 @@ export default {
       this.ruleForm.chargeGroupId = ''
       this.ruleForm.conditions = [
         {
-          conditionName: '城市',
+          conditionName: '省市',
           conditionRule: '',
           conditionVal: ''
         }

@@ -40,10 +40,18 @@
                 :value="item.groupId">
               </el-option>
             </el-select>
-            <el-radio-group v-model="searchData.dateType" @change="searchData.date = []" size="small">
+            <!-- <el-radio-group v-model="searchData.dateType" @change="searchData.date = []" size="small">
               <el-radio-button label="1">本日</el-radio-button>
               <el-radio-button label="2">本月</el-radio-button>
-            </el-radio-group>
+            </el-radio-group> -->
+            <el-select v-model="searchData.dateType" @change="searchData.date = []" size="small">
+              <el-option
+                v-for="item in dateTypeList"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value">
+              </el-option>
+            </el-select>
             <el-date-picker
               v-model="searchData.date"
               @change="searchData.dateType = ''"
@@ -144,6 +152,7 @@
               v-model="form.expirationDate"
               type="date"
               size="small"
+              :picker-options="pickerOptions"
               value-format="yyyy-MM-dd"
               placeholder="选择日期">
             </el-date-picker>
@@ -225,6 +234,11 @@ export default {
       }
     }
     return {
+      pickerOptions: {
+        disabledDate (time) {
+          return time.getTime() < Date.now() - 8.64e7
+        }
+      },
       totalQuery: {}, // 额度
       searchData: {
         key: '',
@@ -235,6 +249,20 @@ export default {
         sortStr: '',
         sortType: ''
       },
+      dateTypeList: [
+        {
+          value: '',
+          label: '全部'
+        },
+        {
+          value: '1',
+          label: '本日'
+        },
+        {
+          value: '2',
+          label: '本月'
+        }
+      ],
       accountQuery: [], // 分组list
       tableData: [],
       pagination: {
@@ -269,21 +297,29 @@ export default {
   created () {
     this.totalQueryData()
     this.getList()
-    postAccountQuery({}).then(res => {
-      if (res.code === 200) {
-        this.accountQuery = res.data.groups
-      }
-    })
-    postTaskExpiration().then(res => {
-      if (res.code === 200) {
-        this.taskExpirationNum =  res.data.totalCount
-      }
-    })
+    this.getGroupsList()
+    this.getTaskExpiration()
   },
   mounted () {
     this.getCharts()
   },
   methods: {
+    // 获取全部分组
+    getGroupsList () {
+      postAccountQuery({}).then(res => {
+        if (res.code === 200) {
+          this.accountQuery = res.data.groups
+        }
+      })
+    },
+    // 获取超时任务条数
+    getTaskExpiration () {
+      postTaskExpiration().then(res => {
+        if (res.code === 200) {
+          this.taskExpirationNum =  res.data.totalCount
+        }
+      })
+    },
     getCharts () {
       let funnelC = null
       let barC = null
@@ -393,6 +429,7 @@ export default {
               this.$message.success('派单成功')
               this.dialogShow = false
               this.subMitLoading = false
+              this.getTaskExpiration()
               this.$refs[formName].resetFields();
             } else {
               this.subMitLoading = false
@@ -413,6 +450,7 @@ export default {
           // this.$message.warning('该分组下无账号')
         } else if (res.code === 200) {
           this.accountList = res.data.accounts.length
+          this.changePurchaseNum()
         }
       })
     },
@@ -420,7 +458,7 @@ export default {
     changePurchaseNum () {
       if (this.form.purchaseNum !== '' && this.form.expirationNum !== '' && this.form.groupId !== '') {
         this.totalNum = ((this.form.purchaseNum - this.form.expirationNum) * this.totalQuery.perCastMoney).toFixed(2)
-        this.pieces = ((Number(this.form.purchaseNum) - Number(this.form.expirationNum)) / Number(this.accountList)).toFixed()
+        this.pieces = ((Number(this.form.purchaseNum) - Number(this.form.expirationNum)) / Number(this.accountList)).toFixed(2)
         this.isCalculation = false
       } else {
         this.isCalculation = true
