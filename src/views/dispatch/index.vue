@@ -445,12 +445,14 @@ export default {
     // 获取组人员数量
     changeGroup () {
       postAccountList(this.form.groupId).then(res => {
-        if (res.code === 400001) {
-          this.form.groupId = ''
-          // this.$message.warning('该分组下无账号')
-        } else if (res.code === 200) {
-          this.accountList = res.data.accounts.length
-          this.changePurchaseNum()
+        if (res.code === 200) {
+          if (res.data.count === 0) {
+            this.form.groupId = ''
+            this.$message.warning('该分组下暂无账号')
+          } else {
+            this.accountList = res.data.count
+            this.changePurchaseNum()
+          }
         }
       })
     },
@@ -458,7 +460,7 @@ export default {
     changePurchaseNum () {
       if (this.form.purchaseNum !== '' && this.form.expirationNum !== '' && this.form.groupId !== '') {
         this.totalNum = ((this.form.purchaseNum - this.form.expirationNum) * this.totalQuery.perCastMoney).toFixed(2)
-        this.pieces = ((Number(this.form.purchaseNum) - Number(this.form.expirationNum)) / Number(this.accountList)).toFixed(2)
+        this.pieces = (Number(this.form.purchaseNum) / Number(this.accountList)).toFixed(2)
         this.isCalculation = false
       } else {
         this.isCalculation = true
