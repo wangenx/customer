@@ -294,9 +294,16 @@ export default {
   },
   created () {
     this.getCustomerList()
+    // 获取全部分组
     postAccountQuery({}).then(res => {
       if (res.code === 200) {
-        this.groupArr = res.data.groups
+        this.groupArr = [
+          {
+            groupId: '',
+            groupName: '全部分组'
+          }
+        ]
+        this.groupArr = [...this.groupArr, ...res.data.groups]
       }
     })
     postCommonLevel({}).then(res => {

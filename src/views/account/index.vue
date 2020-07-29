@@ -251,7 +251,7 @@
           <el-form-item label="选择组" prop="groupId">
             <el-select v-model="distributionRuleForm.groupId" placeholder="请选择">
               <el-option
-                v-for="item in groupArr"
+                v-for="item in groupArrNewAccount"
                 :key="item.groupId"
                 :label="item.groupName"
                 :value="item.groupId">
@@ -433,7 +433,7 @@ export default {
               groupName: '全部分组'
             }
           ]
-          this.groupArr.push(res.data.groups)
+          this.groupArr = [...this.groupArr, ...res.data.groups]
         }
       })
     },

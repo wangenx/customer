@@ -32,9 +32,9 @@
             <el-button size="small" type="primary" @click="getList()">查询</el-button>
           </div>
           <div class="right">
-            <el-select v-model="searchData.groupId" size="small" placeholder="选择分组">
+            <el-select v-model="searchData.groupId" @change="getList()" size="small" placeholder="选择分组">
               <el-option
-                v-for="item in accountQuery"
+                v-for="item in searchAccountQuery"
                 :key="item.groupId"
                 :label="item.groupName"
                 :value="item.groupId">
@@ -44,7 +44,7 @@
               <el-radio-button label="1">本日</el-radio-button>
               <el-radio-button label="2">本月</el-radio-button>
             </el-radio-group> -->
-            <el-select v-model="searchData.dateType" @change="searchData.date = []" size="small">
+            <el-select v-model="searchData.dateType" @change="changeDateType(true)" size="small">
               <el-option
                 v-for="item in dateTypeList"
                 :key="item.value"
@@ -54,7 +54,7 @@
             </el-select>
             <el-date-picker
               v-model="searchData.date"
-              @change="searchData.dateType = ''"
+              @change="changeDateType(false)"
               type="daterange"
               range-separator="-"
               size="small"
@@ -264,6 +264,7 @@ export default {
         }
       ],
       accountQuery: [], // 分组list
+      searchAccountQuery: [], // 搜索分组list
       tableData: [],
       pagination: {
         page: 1,
@@ -304,11 +305,22 @@ export default {
     this.getCharts()
   },
   methods: {
+    changeDateType (bloea) {
+      bloea ? this.searchData.date = [] : this.searchData.dateType = ''
+      this.getList()
+    },
     // 获取全部分组
     getGroupsList () {
       postAccountQuery({}).then(res => {
         if (res.code === 200) {
           this.accountQuery = res.data.groups
+          this.searchAccountQuery = [
+            {
+              groupId: '',
+              groupName: '全部分组'
+            }
+          ]
+          this.searchAccountQuery = [...this.searchAccountQuery, ...res.data.groups]
         }
       })
     },
@@ -630,7 +642,7 @@ export default {
       >>> .el-radio-group
         margin-left 8px  
       >>> .el-date-editor--daterange.el-input__inner
-        width 209px
+        width 216px
         margin-left 8px
   .tabel
     margin-top 18px
