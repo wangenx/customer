@@ -161,7 +161,7 @@
                 v-for="item in postsList"
                 :key="item.postId"
                 :label="item.postName"
-                :value="item.postId">
+                :value="item.postName">
               </el-option>
             </el-select>
           </el-form-item>
