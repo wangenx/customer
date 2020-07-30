@@ -5,7 +5,9 @@
     </div>
     <div class="account-head clearfix">
       <div class="search">
-        <el-select v-model="form.groupId" size="small" placeholder="人员分组">
+        <el-input v-model="form.key" size="small" placeholder="请输入真实姓名/员工id"></el-input>
+        <el-button size="small" @click="getAccountList(1)" type="primary">查询账号</el-button>
+        <el-select v-model="form.groupId" @change="getGroupList(1)" size="small" placeholder="人员分组">
           <el-option
             v-for="item in groupArr"
             :key="item.groupId"
@@ -13,9 +15,6 @@
             :value="item.groupId">
           </el-option>
         </el-select>
-        <el-button size="small" @click="getGroupList(1)" type="primary">查询分组</el-button>
-        <el-input v-model="form.key" size="small" placeholder="请输入真实姓名/员工id"></el-input>
-        <el-button size="small" @click="getAccountList(1)" type="primary">查询账号</el-button>
       </div>
       <div class="operation">
         <el-button size="small" @click="addGroup">新建分组</el-button>
@@ -810,7 +809,7 @@ export default {
   .search
     float left
     /deep/ .el-select
-      width 272px
+      width 104px
       margin-right 10px
       .el-input
         width 100%
@@ -818,7 +817,7 @@ export default {
       width 272px
       margin-right 16px
     /deep/ .el-button
-      margin-right 40px  
+      margin-right 14px  
   .operation
     float right
     /deep/ i

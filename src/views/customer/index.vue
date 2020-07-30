@@ -156,7 +156,14 @@
             <el-input v-model="cusmoterForm.companyName" placeholder="请输入公司名称"></el-input>
           </el-form-item>
           <el-form-item label="客户职位" prop="customPost">
-            <el-input v-model="cusmoterForm.customPost"></el-input>
+            <el-select v-model="cusmoterForm.customPost" filterable placeholder="请选择">
+              <el-option
+                v-for="item in postsList"
+                :key="item.postId"
+                :label="item.postName"
+                :value="item.postId">
+              </el-option>
+            </el-select>
           </el-form-item>
           <el-form-item label="客户标签">
             <div class="tag-arr">
@@ -215,7 +222,7 @@
 </template>
 
 <script>
-import { postAccountQuery, postCustomerQuery, postCommonLevel, postCommonTag, postCommonTagAdd, postAccountAllList, postCommonCreate, postCustomEdit, postCustomDelete, postCustomBtachGroup } from '@/api/api'
+import { postAccountQuery, postCustomerQuery, postCommonLevel, postCommonTag, postCommonTagAdd, postAccountAllList, postCommonCreate, postCustomEdit, postCustomDelete, postCustomBtachGroup, postCommonPost } from '@/api/api'
 export default {
   data () {
     return {
@@ -289,11 +296,19 @@ export default {
       deleteCustomerArr: [],
       distributionCustomId: '',
       customerLoading: false,
-      isSunmit: false
+      isSunmit: false,
+      postsList: []
     }
   },
   created () {
     this.getCustomerList()
+    // 获取客户职位
+    postCommonPost().then(res => {
+      if (res.code === 200) {
+        console.log(res)
+        this.postsList = res.data.posts
+      }
+    })
     // 获取全部分组
     postAccountQuery({}).then(res => {
       if (res.code === 200) {

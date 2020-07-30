@@ -302,7 +302,7 @@ export default {
           label: '西藏'
         },
         {
-        value: '宁夏',
+        value: '北京',
         label: '北京'
         },
         {

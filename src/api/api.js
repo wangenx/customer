@@ -153,6 +153,11 @@ const postAccountGroupChange = (data) => {
   return request.post('/v1/account/group/change', data)
 }
 
+// 查询客户职位列表
+const postCommonPost = (data) => {
+  return request.post('/v1/common/post', data)
+}
+
 export {
   login,
   dispatchList,
@@ -184,5 +189,6 @@ export {
   postCustomDelete,
   postCustomBtachGroup,
   postAccountAllList,
-  postAccountGroupChange
+  postAccountGroupChange,
+  postCommonPost
 }

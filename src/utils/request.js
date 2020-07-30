@@ -35,6 +35,7 @@ service.interceptors.response.use(
       return response.data;
     } else if (response.data.code === 200001) {
       // router.push('/')
+      Message.error(response.data.msg)
       store.dispatch('webLoginOut').then(() => {
         router.push({ name: 'Login' })
       })
