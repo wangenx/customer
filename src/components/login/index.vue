@@ -87,7 +87,8 @@ export default {
       isSend: false,
       loginFuleForm: {
         userName: '',
-        password: ''
+        password: '',
+        type: 1
       },
       ruleForm: {
         userName: '',

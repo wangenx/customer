@@ -195,8 +195,8 @@ export default {
     var validatePurchaseNum = (rule, value, callback) => {
       if (value === '') {
         callback(new Error('请输入购买条数'))
-      } else if (Number(value) > 3000) {
-        callback(new Error('购买条数不能大于3000'))
+      } else if (Number(value) > (Number(this.totalQuery.currentQuota) + Number(this.taskExpirationNum))) {
+        callback(new Error(`购买条数不能大于${Number(this.totalQuery.currentQuota) + Number(this.taskExpirationNum)}`))
       } else {
         callback()
       }
