@@ -7,7 +7,7 @@
       <div class="search">
         <el-input v-model="key" size="small" placeholder="请输入内容"></el-input>
         <el-button size="small" type="primary" @click="search">查询</el-button>
-        <el-select v-model="groupId" filterable size="small" placeholder="筛选分组">
+        <el-select v-model="groupId" @change="search" filterable size="small" placeholder="筛选分组">
           <el-option
             v-for="item in groupArr"
             :key="item.groupId"
