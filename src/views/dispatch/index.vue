@@ -2,10 +2,18 @@
   <div class="dispatch">
     <div class="sale-data clearfix">
       <div class="data">
-        <div class="title">销售数据</div>
+        <div class="title">
+          <div class="head">销售数据</div>
+          <div class="date">
+            <el-radio-group v-model="chartsType" @change="changeType" size="small">
+              <el-radio-button :label="1">近一周</el-radio-button>
+              <el-radio-button :label="2">近两周</el-radio-button>
+            </el-radio-group>
+          </div>
+        </div>
         <div class="all-charts">
           <div class="funnel" ref="funnelCharts"></div>
-          <div class="bar" ref="barCharts"></div>
+          <div class="line" ref="lineCharts"></div>
         </div>
       </div>
       <div class="money">
@@ -183,7 +191,7 @@
 </template>
 
 <script>
-import { dispatchList, postTotalQuery, postAccountQuery, postTaskExpiration, postTaskCreate, postAccountList } from '@/api/api'
+import { dispatchList, postTotalQuery, postAccountQuery, postTaskExpiration, postTaskCreate, postAccountList, postTaskChartHopper, postTaskChartPolygon } from '@/api/api'
 let echarts = require('echarts/lib/echarts')
 require('echarts/lib/chart/funnel')
 require('echarts/lib/chart/line')
@@ -292,7 +300,10 @@ export default {
       accountList: 0,
       pieces: 0,
       subTasksLoading: false,
-      subMitLoading: false
+      subMitLoading: false,
+      chartHopper: [], // 漏斗图数据
+      chartsType: 1, // 图标数据搜索条件
+      chartsLine: [] // 折线图数据
     }
   },
   created () {
@@ -302,7 +313,34 @@ export default {
     this.getTaskExpiration()
   },
   mounted () {
-    this.getCharts()
+    this.$nextTick(() => {
+      postTaskChartHopper().then(res => {
+        if (res.code === 200) {
+          const {data} = res
+          this.chartHopper = []
+          Object.keys(data).forEach((key) => {
+            if (key === 'totalClue') {
+              this.chartHopper.push({
+                value: data[key],
+                name: '转化总数'
+              })
+            } else if (key === 'transClue') {
+              this.chartHopper.push({
+                value: data[key],
+                name: '转化为机会'
+              })
+            } else {
+              this.chartHopper.push({
+                value: data[key],
+                name: '转为订单数'
+              })
+            }
+          })
+          this.getFunnelCharts()
+        }
+      })
+      this.getLineData()
+    })
   },
   methods: {
     changeDateType (bloea) {
@@ -332,75 +370,97 @@ export default {
         }
       })
     },
-    getCharts () {
+    getFunnelCharts () {
       let funnelC = null
-      let barC = null
       funnelC = echarts.init(this.$refs.funnelCharts)
-      barC = echarts.init(this.$refs.barCharts)
       funnelC.setOption({
-        title: {
-          // text: '漏斗图',
-          // subtext: '纯属虚构'
-        },
         tooltip: {
-          trigger: 'item'
-          // formatter: "{a} <br/>{b} : {c}%"
+          show: false,
+          trigger: 'item',
+          formatter: "{b} : {c}"
         },
-        // toolbox: {
-        //   feature: {
-        //     dataView: {readOnly: false},
-        //     restore: {},
-        //     saveAsImage: {}
-        //   }
-        // },
+        toolbox: {
+          feature: {
+            dataView: {readOnly: false},
+            restore: {},
+            saveAsImage: {}
+          }
+        },
         legend: {
-          data: ['线索总数','转化为机会','转为订单数']
+          data: ['转化总数', '转化为机会', '转为订单数']
         },
         series: [
           {
-            name:'漏斗图',
-            type:'funnel',
+            name: '固定',
+            type: 'funnel',
             left: '10%',
-            top: 60,
-            //x2: 80,
-            bottom: 60,
             width: '80%',
-            // height: {totalHeight} - y - y2,
-            min: 2500,
-            max: 10000,
-            minSize: '0',
-            maxSize: '100%',
-            sort: 'descending',
-            gap: 2,
             label: {
-                show: true,
-                position: 'inside'
+              show: false,
+              formatter: '{b}'
             },
             labelLine: {
-                length: 10,
-                lineStyle: {
-                  width: 1,
-                  type: 'solid'
-                }
+              show: false
             },
             itemStyle: {
-                borderColor: '#fff',
-                borderWidth: 1
+              opacity: 1
             },
+            min: 25,
             emphasis: {
               label: {
-                fontSize: 20
+                show: false
               }
             },
             data: [
-                {value: 10000, name: '线索总数'},
-                {value: 7500, name: '转化为机会'},
-                {value: 5000, name: '转为订单数'}
+              {value: 50, name: '转为订单数'},
+              {value: 75, name: '转化为机会'},
+              {value: 100, name: '转化总数'}
             ]
+          },
+          {
+            name: '实际',
+            type: 'funnel',
+            left: '10%',
+            width: '80%',
+            maxSize: '80%',
+            label: {
+              position: 'inside',
+              formatter: '{c}',
+              color: '#fff'
+            },
+            itemStyle: {
+              opacity: 0,
+              borderColor: '#fff',
+              borderWidth: 2
+            },
+            emphasis: {
+              label: {
+                position: 'inside',
+                formatter: '{b}: {c}'
+              }
+            },
+            data: this.chartHopper
           }
         ]
       })
-      barC.setOption({
+    },
+    // 搜索近一周或者近两周折线图数据
+    changeType () {
+      this.getLineData()
+    },
+    // 获取折线图数据
+    getLineData () {
+      postTaskChartPolygon(this.chartsType).then(res => {
+        if (res.code === 200) {
+          this.chartsLine = res.data
+          this.getLineCharts()
+        }
+      })
+    },
+    getLineCharts () {
+      let lineC = null
+      lineC = echarts.init(this.$refs.lineCharts)
+      lineC.setOption({
         tooltip: {
           trigger: 'axis'
         },
@@ -413,15 +473,29 @@ export default {
         },
         xAxis: {
           type: 'category',
-          data: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30']
+          data: this.chartsLine.map(e => {
+            return e.time.slice(5)
+          })
         },
         yAxis: {
             type: 'value'
         },
-        series: [{
-            data: [820, 932, 901, 934, 1290, 1330, 1320, 820, 932, 901, 934, 1290, 1330, 1320, 820, 932, 901, 934, 1290, 1330, 1320, 820, 932, 901, 934, 1290, 1330, 1320, 500, 900],
-            type: 'line'
-        }]
+        series: [
+          {
+            data: this.chartsLine.map(e => {
+              return e.transfer
+            }),
+            type: 'line',
+            name: '转化为机会'
+          },
+          {
+              data: this.chartsLine.map(e => {
+                return e.deals
+              }),
+              type: 'line',
+              name: '转为订单数'
+          }
+        ]
       })
     },
     // 派单提交
@@ -547,7 +621,7 @@ export default {
       > .funnel
         width 35%
         height 300px
-      > .bar
+      > .line
         width 65%
         height 300px
   > .money
@@ -617,6 +691,11 @@ export default {
   font-size 14px
   color #a3a3a3
   padding-left 28px
+  > div
+    float left
+  > .date
+    float right
+    margin-right 28px
 
 .situation
   background-color #fff

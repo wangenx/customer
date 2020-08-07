@@ -158,6 +158,16 @@ const postCommonPost = (data) => {
   return request.post('/v1/common/post', data)
 }
 
+// 图形展示-漏斗数据
+const postTaskChartHopper = () => {
+  return request.post('/v1/task/chart/hopper')
+}
+
+// 图形展示-折线展示
+const postTaskChartPolygon = (type) => {
+  return request.post(`/v1/task/chart/polygon?type=${type}`)
+}
+
 export {
   login,
   dispatchList,
@@ -190,5 +200,7 @@ export {
   postCustomBtachGroup,
   postAccountAllList,
   postAccountGroupChange,
-  postCommonPost
+  postCommonPost,
+  postTaskChartHopper,
+  postTaskChartPolygon
 }
