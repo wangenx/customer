@@ -317,25 +317,24 @@ export default {
       postTaskChartHopper().then(res => {
         if (res.code === 200) {
           const {data} = res
-          this.chartHopper = []
-          Object.keys(data).forEach((key) => {
-            if (key === 'totalClue') {
-              this.chartHopper.push({
-                value: data[key],
-                name: '转化总数'
-              })
-            } else if (key === 'transClue') {
-              this.chartHopper.push({
-                value: data[key],
-                name: '转化为机会'
-              })
-            } else {
-              this.chartHopper.push({
-                value: data[key],
-                name: '转为订单数'
-              })
-            }
-          })
+          this.chartHopper = [
+            {
+              name: 'C类',
+              value: data.CCustomer
+            },
+            {
+              name: 'B类',
+              value: data.BCustomer
+            },
+            {
+              name: 'A类',
+              value: data.ACustomer
+            },
+            {
+              name: '已成交',
+              value: data.dealCustomer
+            },
+          ]
           this.getFunnelCharts()
         }
       })
@@ -387,7 +386,7 @@ export default {
           }
         },
         legend: {
-          data: ['转化总数', '转化为机会', '转为订单数']
+          data: ['C类', 'B类', 'A类', '已成交']
         },
         series: [
           {
@@ -405,16 +404,17 @@ export default {
             itemStyle: {
               opacity: 1
             },
-            min: 25,
+            min: 0,
             emphasis: {
               label: {
                 show: false
               }
             },
             data: [
-              {value: 50, name: '转为订单数'},
-              {value: 75, name: '转化为机会'},
-              {value: 100, name: '转化总数'}
+              {value: 25, name: '已成交'},
+              {value: 50, name: 'A类'},
+              {value: 75, name: 'B类'},
+              {value: 100, name: 'C类'}
             ]
           },
           {
@@ -439,6 +439,7 @@ export default {
                 formatter: '{b}: {c}'
               }
             },
+            sort: 'none',
             data: this.chartHopper
           }
         ]
@@ -486,14 +487,14 @@ export default {
               return e.transfer
             }),
             type: 'line',
-            name: '转化为机会'
+            name: 'A类'
           },
           {
-              data: this.chartsLine.map(e => {
-                return e.deals
-              }),
-              type: 'line',
-              name: '转为订单数'
+            data: this.chartsLine.map(e => {
+              return e.deals
+            }),
+            type: 'line',
+            name: '已成交'
           }
         ]
       })
