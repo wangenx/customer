@@ -1,5 +1,5 @@
 {
-  "name": "gateway_manage",
+  "name": "customer",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -27,6 +27,7 @@
     "babel-eslint": "^10.1.0",
     "babel-plugin-component": "^1.1.1",
     "babel-polyfill": "^6.26.0",
+    "compression-webpack-plugin": "^4.0.0",
     "element-ui": "^2.13.2",
     "es6-promise": "^4.2.8",
     "eslint": "^6.7.2",
@@ -40,14 +41,16 @@
   "eslintConfig": {
     "root": true,
     "env": {
-      "node": true
+      "node": true,
+      "es6": true
     },
     "extends": [
       "plugin:vue/essential",
       "eslint:recommended"
     ],
     "parserOptions": {
-      "parser": "babel-eslint"
+      "parser": "babel-eslint",
+      "legacyDecorators": true
     },
     "rules": {}
   },
